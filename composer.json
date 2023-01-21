@@ -1,0 +1,26 @@
+{
+    "name": "phputil/cors",
+    "description": "CORS middleware for phputil\router",
+    "type": "library",
+    "license": "MIT",
+    "scripts": {
+        "test": "kahlan",
+        "test2": "kahlan --reporter=verbose",
+        "cov": "kahlan --coverage"
+    },
+    "require-dev": {
+        "kahlan/kahlan": "^5.2",
+        "phputil/router": "^0.2.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "phputil\\cors\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Thiago Delgado Pinto",
+            "email": "thiago-dp@bol.com.br"
+        }
+    ]
+}
