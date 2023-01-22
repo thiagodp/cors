@@ -1,16 +1,18 @@
 {
     "name": "phputil/cors",
-    "description": "CORS middleware for phputil\router",
+    "description": "CORS middleware for phputil/router",
     "type": "library",
     "license": "MIT",
     "scripts": {
         "test": "kahlan",
         "test2": "kahlan --reporter=verbose",
-        "cov": "kahlan --coverage"
+        "cov": "kahlan --coverage",
+        "check": "phpstan analyze src"
     },
     "require-dev": {
         "kahlan/kahlan": "^5.2",
-        "phputil/router": "^0.2.6"
+        "phputil/router": "^0.2.6",
+        "phpstan/phpstan": "^1.9"
     },
     "autoload": {
         "psr-4": {

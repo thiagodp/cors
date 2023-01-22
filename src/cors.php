@@ -8,8 +8,8 @@ namespace phputil\cors;
  * You can see the lastest CORS standard at https://fetch.spec.whatwg.org/#cors-protocol
  */
 
-require_once __DIR__ . '/cors-options.php';
-require_once __DIR__ . '/http.php';
+require_once 'cors-options.php';
+require_once 'http.php';
 
 const ANY = '*';
 
@@ -32,7 +32,7 @@ const HEADER_ACCESS_CONTROL_EXPOSE_HEADERS      = 'Access-Control-Expose-Headers
 /**
  * CORS middleware.
  *
- * @param array|phputil\router\CorsOptions $options CORS options.
+ * @param array|CorsOptions $options CORS options.
  * @return callable
  */
 function cors( $options = [] ) {
@@ -77,7 +77,7 @@ function isOriginAllowed( $requestOrigin, $originToCheck ) {
     if ( $requestOrigin === $originToCheck ) {
         return true;
     }
-    if ( is_array( $originToCheck ) ) {
+    if ( \is_array( $originToCheck ) ) {
         foreach ( $originToCheck as $origin ) {
             if ( isOriginAllowed( $requestOrigin, $origin ) ) {
                 return true;
