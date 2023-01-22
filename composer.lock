@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8af144d5b7de099776fcd56a05c3ca50",
+    "content-hash": "b84c5d8a7a3c19e3205680fb3e6a9ce1",
     "packages": [],
     "packages-dev": [
         {
@@ -67,16 +67,16 @@
         },
         {
             "name": "phputil/router",
-            "version": "v0.2.5",
+            "version": "v0.2.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thiagodp/router.git",
-                "reference": "3d4234d167b32adc260111ccd15057de5ef20dbf"
+                "reference": "12110b8eae8a80e6fa1f6da605af8e04b8551c68"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thiagodp/router/zipball/3d4234d167b32adc260111ccd15057de5ef20dbf",
-                "reference": "3d4234d167b32adc260111ccd15057de5ef20dbf",
+                "url": "https://api.github.com/repos/thiagodp/router/zipball/12110b8eae8a80e6fa1f6da605af8e04b8551c68",
+                "reference": "12110b8eae8a80e6fa1f6da605af8e04b8551c68",
                 "shasum": ""
             },
             "require-dev": {
@@ -101,9 +101,9 @@
             "description": "Express-like router for PHP",
             "support": {
                 "issues": "https://github.com/thiagodp/router/issues",
-                "source": "https://github.com/thiagodp/router/tree/v0.2.5"
+                "source": "https://github.com/thiagodp/router/tree/v0.2.6"
             },
-            "time": "2023-01-21T04:42:06+00:00"
+            "time": "2023-01-22T03:18:24+00:00"
         }
     ],
     "aliases": [],

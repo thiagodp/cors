@@ -10,7 +10,7 @@
     },
     "require-dev": {
         "kahlan/kahlan": "^5.2",
-        "phputil/router": "^0.2.2"
+        "phputil/router": "^0.2.6"
     },
     "autoload": {
         "psr-4": {

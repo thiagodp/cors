@@ -3,24 +3,38 @@
 
 # phputil/cors
 
-> 🔌 CORS middleware for phputil/router
+> 🔌 CORS middleware for [phputil/router](https://github.com/thiagodp/router)
 
 _Warning: This library is under development. Do not use it in production yet._
 
 ## Installation
 
+> Requires phputil/router **v0.2.6+**
+
 ```bash
 composer require phputil/cors
 ```
 
-## Usage in phputil\router
+## Usage
 
 ```php
-// ...
-use function phputil\cors\cors;
-// ...
-$app->use( cors() );
+require_once 'vendor/autoload.php';
+use phputil\router\Router;
+use function phputil\cors\cors; // <<< 1. Declare the function namespace
+
+$app = new Router();
+$app->use( cors() ); // <<< 2. Invoke the function to use it as a middleware
+$app->get( '/', function( $req, $res ) {
+    $res->send( 'Hello' );
+} );
+$app->listen();
 ```
+
+## API
+
+This middleware is inspired by Troy Goode's [CORS Router for ExpressJS](https://github.com/expressjs/cors) and it aims to have the same options.
+
+_Soon_
 
 ## License
 
