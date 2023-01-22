@@ -4,10 +4,30 @@ namespace phputil\cors;
 /**
  * This file is inspired by Troy Goode's CORS Router for ExpressJS,
  * available at https://github.com/expressjs/cors with a MIT License.
+ *
+ * You can see the lastest CORS standard at https://fetch.spec.whatwg.org/#cors-protocol
  */
 
 require_once __DIR__ . '/cors-options.php';
 require_once __DIR__ . '/http.php';
+
+const ANY = '*';
+
+const HEADER_VARY = 'Vary';
+const HEADER_ORIGIN = 'Origin'; // URL
+const HEADER_CREDENTIAIS = 'Credentials'; // 'omit', 'include', 'same-origin'
+const HEADER_CONTENT_LENGTH = 'Content-Length';
+
+// CORS Request Headers
+const HEADER_ACCESS_CONTROL_REQUEST_HEADERS = 'Access-Control-Request-Headers';
+
+// CORS Response Headers
+const HEADER_ACCESS_CONTROL_ALLOW_ORIGIN        = 'Access-Control-Allow-Origin';      // URL, 'null' or '*'
+const HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS   = 'Access-Control-Allow-Credentials'; // 'include', 'same-origin'
+const HEADER_ACCESS_CONTROL_ALLOW_METHODS       = 'Access-Control-Allow-Methods';
+const HEADER_ACCESS_CONTROL_ALLOW_HEADERS       = 'Access-Control-Allow-Headers';
+const HEADER_ACCESS_CONTROL_MAX_AGE             = 'Access-Control-Max-Age'; // Default is 5
+const HEADER_ACCESS_CONTROL_EXPOSE_HEADERS      = 'Access-Control-Expose-Headers';
 
 /**
  * CORS middleware.
@@ -25,14 +45,15 @@ function cors( $options = [] ) {
     return function ( &$req, &$res, &$stop ) use ( &$opt ) {
 
         $headers = [];
-        if ( $req->method() === METHOD_OPTIONS ) { // Preflight
+        makeOrigin( $req, $opt, $headers );
+        makeCredentials( $opt, $headers );
 
-            makeOrigin( $req, $opt, $headers );
-            makeCredentials( $opt, $headers );
+        if ( $req->method() === METHOD_OPTIONS ) { // Preflight Request
+
             makeMethods( $opt, $headers );
             makeAllowedHeaders( $opt, $headers );
-            makeMaxAge( $opt, $headers );
             makeExposedHeaders( $opt, $headers );
+            makeMaxAge( $opt, $headers );
 
             $res->header( $headers );
 
@@ -40,39 +61,15 @@ function cors( $options = [] ) {
                 return;
             }
 
-            $res->status( $opt->optionsSuccessStatus )->header( 'Content-Length', 0 )->end();
+            $res->status( $opt->optionsSuccessStatus )->header( HEADER_CONTENT_LENGTH, 0 )->end();
             $stop = true;
         } else {
             makeOrigin( $req, $opt, $headers );
             makeCredentials( $opt, $headers );
-            makeExposedHeaders( $opt, $headers );
 
             $res->header( $headers );
         }
     };
-}
-
-function makeOrigin( &$req, CorsOptions &$opt, array &$headers ) {
-    $value = $opt->origin;
-    if ( empty( $value ) ) {
-        $value = '*';
-    }
-    if ( \is_string( $value ) ) {
-        $headers[ HEADER_ACCESS_CONTROL_ALLOW_ORIGIN ] = $value;
-    } else if ( \is_array( $value ) ) {
-        $origin = $req->header( 'Origin' );
-        if ( ! isset( $origin ) ) {
-            $headers[ HEADER_ACCESS_CONTROL_ALLOW_ORIGIN ] = false; // Deny
-            return;
-        }
-        if ( isOriginAllowed( $origin, $opt->origin ) ) {
-            $headers[ HEADER_ACCESS_CONTROL_ALLOW_ORIGIN ] = $origin; // Reflect origin
-        }
-    }
-    // Add Vary header
-    if ( $value != '*' ) {
-        $headers[ HEADER_VARY ] = 'Origin';
-    }
 }
 
 
@@ -91,13 +88,33 @@ function isOriginAllowed( $requestOrigin, $originToCheck ) {
 }
 
 
-const HEADER_VARY = 'Vary';
-const HEADER_ACCESS_CONTROL_ALLOW_ORIGIN = 'Access-Control-Allow-Origin';
-const HEADER_ACCESS_CONTROL_ALLOW_METHODS = 'Access-Control-Allow-Methods';
-const HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS = 'Access-Control-Allow-Credentials';
-const HEADER_ACCESS_CONTROL_REQUEST_HEADERS = 'Access-Control-Request-Headers';
-const HEADER_ACCESS_CONTROL_EXPOSE_HEADERS = 'Access-Control-Expose-Headers';
-const HEADER_ACCESS_CONTROL_MAX_AGE = 'Access-Control-Max-Age';
+function makeOrigin( &$req, CorsOptions &$opt, array &$headers ) {
+    $value = $opt->origin;
+    if ( empty( $value ) ) {
+        $value = ANY;
+    }
+    if ( \is_string( $value ) ) {
+        $headers[ HEADER_ACCESS_CONTROL_ALLOW_ORIGIN ] = $value;
+    } else if ( \is_array( $value ) ) {
+        // Since only a string can be set as a value, it will try to check if the request Origin
+        // is included in the array. If it is included, then it will be used. Otherwise, it will be
+        // not included in the response.
+        $requestOrigin = $req->header( HEADER_ORIGIN );
+        if ( ! isset( $requestOrigin ) ) {
+            if ( isset( $headers[ HEADER_ACCESS_CONTROL_ALLOW_ORIGIN ] ) ) {
+                unset( $headers[ HEADER_ACCESS_CONTROL_ALLOW_ORIGIN ] );
+            }
+            return;
+        }
+        if ( isOriginAllowed( $requestOrigin, $opt->origin ) ) { // Same origin?
+            $headers[ HEADER_ACCESS_CONTROL_ALLOW_ORIGIN ] = $requestOrigin; // Reflect origin
+        }
+    }
+    // Add Vary header
+    if ( $value != ANY ) {
+        $headers[ HEADER_VARY ] = HEADER_ORIGIN;
+    }
+}
 
 
 function makeCredentials( CorsOptions &$opt, array &$headers ) {
@@ -114,19 +131,11 @@ function makeMethods( CorsOptions &$opt, array &$headers ) {
 
 
 function makeAllowedHeaders( CorsOptions &$opt, array &$headers ) {
-    if ( ! is_array( $opt->allowedHeaders ) || empty( $opt->allowedHeaders ) ) {
+    if ( ! \is_array( $opt->allowedHeaders ) || empty( $opt->allowedHeaders ) ) {
         $headers[ HEADER_VARY ] = HEADER_ACCESS_CONTROL_REQUEST_HEADERS;
         return;
     }
-    $headers[ HEADER_ACCESS_CONTROL_REQUEST_HEADERS ] = implode( ',', $opt->allowedHeaders );
-}
-
-
-function makeMaxAge( CorsOptions &$opt, array &$headers ) {
-    if ( ! is_numeric( $opt->maxAge ) ) {
-        return;
-    }
-    $headers[ HEADER_ACCESS_CONTROL_MAX_AGE ] = $opt->maxAge;
+    $headers[ HEADER_ACCESS_CONTROL_REQUEST_HEADERS ] = \implode( ',', $opt->allowedHeaders );
 }
 
 
@@ -137,42 +146,12 @@ function makeExposedHeaders( CorsOptions &$opt, array &$headers ) {
     $headers[ HEADER_ACCESS_CONTROL_EXPOSE_HEADERS ] = implode( ',', $opt->exposedHeaders );
 }
 
-//
-// Validation
-//
 
-const MSG_INVALID_ORIGIN = 'The option "origin" must be a string.';
-const MSG_INVALID_METHODS_TYPE = 'The option "methods" must be a string or an array.';
-const MSG_INVALID_HTTP_METHOD = 'Invalid HTTP method.';
-const MSG_INVALID_SUCCESS_STATUS = 'Invalid success status code.';
-
-function validateOptions( CorsOptions $co ) {
-    // Origin
-    if ( ! is_string( $co->origin ) ) {
-        throw new \RuntimeException( MSG_INVALID_ORIGIN );
+function makeMaxAge( CorsOptions &$opt, array &$headers ) {
+    if ( ! is_numeric( $opt->maxAge ) ) {
+        return;
     }
-    // Methods
-    $methods = [];
-    if ( is_string( $co->methods ) ) {
-        $methods = explode( ',', $co->methods );
-    } else if ( is_array( $co->methods ) ) {
-        $methods = $co->methods;
-    } else {
-        throw new \RuntimeException( MSG_INVALID_METHODS_TYPE );
-    }
-    // HTTP methods
-    foreach ( $methods as $m ) {
-        if ( ! isHttpMethodValid( trim( $m ) ) ) {
-            throw new \RuntimeException( MSG_INVALID_HTTP_METHOD );
-        }
-    }
-    // Status
-    if ( ! is_numeric( $co->optionsSuccessStatus ) ||
-        $co->optionsSuccessStatus < 200 ||
-        $co->optionsSuccessStatus > 399
-    ) {
-        throw new \RuntimeException( MSG_INVALID_SUCCESS_STATUS );
-    }
+    $headers[ HEADER_ACCESS_CONTROL_MAX_AGE ] = $opt->maxAge;
 }
 
 ?>

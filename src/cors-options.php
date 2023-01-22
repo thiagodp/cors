@@ -6,14 +6,30 @@ namespace phputil\cors;
  */
 class CorsOptions {
 
+    /** @var string|array Equivalent to `Access-Control-Allow-Origin` */
     public $origin = '*';
+
+    /** @var string|array Equivalent to `Access-Control-Allow-Methods` */
     public $methods = 'GET,HEAD,PUT,PATCH,POST,DELETE';
-    public $preflightContinue = false;
-    public $optionsSuccessStatus = 204; // No Content
+
+    /** @var bool Equivalent to `Access-Control-Allow-Credentials` */
     public $credentials = false;
-    public $allowedHeaders = [];
-    public $exposedHeaders = [];
+
+    /** @var string|array Equivalent to `Access-Control-Allow-Headers` */
+    public $allowedHeaders = '*';
+
+    /** @var string|array Equivalent to `Access-Control-Expose-Headers` */
+    public $exposedHeaders = '*';
+
+    /** @var int|null Equivalent to `Access-Control-Max-Age` */
     public $maxAge = null;
+
+    /** @var bool If the middleware should allow to continue the response after the preflight. */
+    public $preflightContinue = false;
+
+    /** @var int Successful status when OPTIONS is sent. */
+    public $optionsSuccessStatus = 204; // No Content
+
 
     /**
      * Reads options from an array with the same keys.
@@ -65,22 +81,6 @@ class CorsOptions {
     public function withMethods( $value ) { $this->methods = $value; return $this; }
 
     /**
-     * Sets the preflightContinue.
-     *
-     * @param bool $value
-     * @return CorsOptions
-     */
-    public function withPreflightContinue( $value ) { $this->preflightContinue = $value; return $this; }
-
-    /**
-     * Sets the optionsSuccessStatus.
-     *
-     * @param int $value
-     * @return CorsOptions
-     */
-    public function withOptionsSuccessStatus( $value ) { $this->optionsSuccessStatus = $value; return $this; }
-
-    /**
      * Sets the credentials.
      *
      * @param bool $value
@@ -112,6 +112,53 @@ class CorsOptions {
      */
     public function withMaxAge( $value ) { $this->maxAge = $value; return $this; }
 
+    /**
+     * Sets the preflightContinue.
+     *
+     * @param bool $value
+     * @return CorsOptions
+     */
+    public function withPreflightContinue( $value ) { $this->preflightContinue = $value; return $this; }
+
+    /**
+     * Sets the optionsSuccessStatus.
+     *
+     * @param int $value
+     * @return CorsOptions
+     */
+    public function withOptionsSuccessStatus( $value ) { $this->optionsSuccessStatus = $value; return $this; }
+}
+
+//
+// Validation
+//
+
+const MSG_INVALID_METHODS_TYPE = 'The option "methods" must be a string or an array.';
+const MSG_INVALID_HTTP_METHOD = 'Invalid HTTP method.';
+const MSG_INVALID_SUCCESS_STATUS = 'Invalid success status code. It should be 200 or 204.';
+
+function validateOptions( CorsOptions $co ) {
+    // Methods
+    $methodsToValidate = [];
+    if ( is_string( $co->methods ) ) {
+        $methodsToValidate = explode( ',', $co->methods );
+    } else if ( is_array( $co->methods ) ) {
+        $methodsToValidate = $co->methods;
+    } else {
+        throw new \RuntimeException( MSG_INVALID_METHODS_TYPE );
+    }
+    // HTTP methods
+    foreach ( $methodsToValidate as $m ) {
+        if ( ! isHttpMethodValid( trim( $m ) ) ) {
+            throw new \RuntimeException( MSG_INVALID_HTTP_METHOD );
+        }
+    }
+    // Status
+    if ( ! is_numeric( $co->optionsSuccessStatus ) ||
+        ! ( $co->optionsSuccessStatus == 200 || $co->optionsSuccessStatus == 204 )
+    ) {
+        throw new \RuntimeException( MSG_INVALID_SUCCESS_STATUS );
+    }
 }
 
 ?>
