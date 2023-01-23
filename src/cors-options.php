@@ -10,7 +10,7 @@ class CorsOptions {
     public $origin = '*';
 
     /** @var string|array Equivalent to `Access-Control-Allow-Methods` */
-    public $methods = 'GET,HEAD,PUT,PATCH,POST,DELETE';
+    public $methods = 'GET,POST,OPTIONS,HEAD,PUT,DELETE,PATCH';
 
     /** @var bool Equivalent to `Access-Control-Allow-Credentials` */
     public $credentials = false;

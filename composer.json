@@ -17,7 +17,8 @@
     "autoload": {
         "psr-4": {
             "phputil\\cors\\": "src/"
-        }
+        },
+        "files": [ "src/cors.php" ]
     },
     "authors": [
         {
