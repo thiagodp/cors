@@ -5,8 +5,6 @@
 
 > 🔌 CORS middleware for [phputil/router](https://github.com/thiagodp/router)
 
-_Warning: This library is under development. Do not use it in production yet._
-
 ## Installation
 
 > Requires phputil/router **v0.2.11+**
