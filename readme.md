@@ -5,6 +5,10 @@
 
 > 🔌 CORS middleware for [phputil/router](https://github.com/thiagodp/router)
 
+- Unit-tested ✔
+- Well-documented 📖
+- Syntax compatible with [expressjs/cors](https://github.com/expressjs/cors) 🎯
+
 ## Installation
 
 > Requires phputil/router **v0.2.11+**
@@ -62,25 +66,25 @@ function cors( array|CorOptions $options ): callable;
 - The **default value** is `GET,HEAD,OPTIONS,POST,PUT,DELETE,PATCH`.
 - HTTP methods in a `string` must be separated by **comma**.
 
-## `allowedHeaders`
+### `allowedHeaders`
 - Configures the response header `Access-Control-Allow-Headers`.
 - Allowed types: `string`, `array`.
 - The **default value** is `'*'`, meaning to accept any request header.
 - HTTP headers in a `string` must be separated by **comma**.
 
-## `exposedHeaders`
+### `exposedHeaders`
 - Configures the response header `Access-Control-Expose-Headers`.
 - Allowed types: `string`, `array`.
 - The **default value** is `''` (empty string), meaning to not include the header.
 - HTTP headers in a `string` must be separated by **comma**.
 
-## `maxAge`
+### `maxAge`
 - Configures the response header `Access-Control-Max-Age`.
 - Allowed types: `int`, `null`.
 - The **default value** is `null`, meaning to not include the header.
 - An `int` value means the number of seconds that a preflight request can be cached (by the browser).
 
-# Example
+## Example
 
 Using an array:
 
