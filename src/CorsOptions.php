@@ -1,25 +1,31 @@
 <?php
 namespace phputil\cors;
 
+const ANY = '*';
+const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,OPTIONS,POST,PUT,DELETE,PATCH';
+
 /**
- * CORS options
+ * CORS options.
+ *
+ * The options properties are compatible with Troy Goode's ExpressJS Cors middleware,
+ * available at https://github.com/expressjs/cors with a MIT license.
  */
 class CorsOptions {
 
-    /** @var string|array Equivalent to `Access-Control-Allow-Origin` */
-    public $origin = '*';
+    /** @var bool|string|array Allowed origins. Used to make `Access-Control-Allow-Origin` */
+    public $origin = true;
 
     /** @var string|array Equivalent to `Access-Control-Allow-Methods` */
-    public $methods = 'GET,POST,OPTIONS,HEAD,PUT,DELETE,PATCH';
+    public $methods = DEFAULT_ALLOWED_METHODS;
 
     /** @var bool Equivalent to `Access-Control-Allow-Credentials` */
-    public $credentials = false;
+    public $credentials = true;
 
     /** @var string|array Equivalent to `Access-Control-Allow-Headers` */
-    public $allowedHeaders = '*';
+    public $allowedHeaders = ANY;
 
     /** @var string|array Equivalent to `Access-Control-Expose-Headers` */
-    public $exposedHeaders = '*';
+    public $exposedHeaders = ''; // None
 
     /** @var int|null Equivalent to `Access-Control-Max-Age` */
     public $maxAge = null;
@@ -41,7 +47,7 @@ class CorsOptions {
     public function fromArray( array $options, $validate = true ) {
         $attributes = \get_object_vars( $this );
         foreach ( $options as $key => $value ) {
-            if ( isset( $attributes[ $key ] ) ) {
+            if ( \array_key_exists( $key, $attributes ) ) {
                 $this->{ $key } = $value;
             }
         }
@@ -140,9 +146,9 @@ const MSG_INVALID_SUCCESS_STATUS = 'Invalid success status code. It should be 20
 function validateOptions( CorsOptions $co ) {
     // Methods
     $methodsToValidate = [];
-    if ( is_string( $co->methods ) ) {
-        $methodsToValidate = explode( ',', $co->methods );
-    } else if ( is_array( $co->methods ) ) {
+    if ( \is_string( $co->methods ) ) {
+        $methodsToValidate = \explode( ',', $co->methods );
+    } else if ( \is_array( $co->methods ) ) {
         $methodsToValidate = $co->methods;
     } else {
         throw new \RuntimeException( MSG_INVALID_METHODS_TYPE );
@@ -154,7 +160,7 @@ function validateOptions( CorsOptions $co ) {
         }
     }
     // Status
-    if ( ! is_numeric( $co->optionsSuccessStatus ) ||
+    if ( ! \is_numeric( $co->optionsSuccessStatus ) ||
         ! ( $co->optionsSuccessStatus == 200 || $co->optionsSuccessStatus == 204 )
     ) {
         throw new \RuntimeException( MSG_INVALID_SUCCESS_STATUS );

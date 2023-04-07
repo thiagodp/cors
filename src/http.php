@@ -27,4 +27,11 @@ function isHttpMethodValid( $method ) {
     return \array_search( \mb_strtoupper( $method ), SUPPORTED_METHODS ) !== false;
 }
 
+function isOriginAllowed( $requestOrigin, $originToCheck ) {
+    if ( $requestOrigin === $originToCheck ) {
+        return true;
+    }
+    return \is_array( $originToCheck ) && \in_array( $requestOrigin, $originToCheck );
+}
+
 ?>

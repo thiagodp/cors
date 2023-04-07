@@ -1,22 +1,19 @@
 <?php
 namespace phputil\cors;
 
+require_once __DIR__ . '/CorsOptions.php';
+require_once __DIR__ . '/http.php';
+
 /**
- * This file is inspired by Troy Goode's CORS Router for ExpressJS,
- * available at https://github.com/expressjs/cors with a MIT License.
- *
- * You can see the lastest CORS standard at https://fetch.spec.whatwg.org/#cors-protocol
+ * @see Lastest CORS standard at https://fetch.spec.whatwg.org/#cors-protocol
  */
-
-require_once 'cors-options.php';
-require_once 'http.php';
-
-const ANY = '*';
 
 const HEADER_VARY = 'Vary';
 const HEADER_ORIGIN = 'Origin'; // URL
 const HEADER_CREDENTIAIS = 'Credentials'; // 'omit', 'include', 'same-origin'
 const HEADER_CONTENT_LENGTH = 'Content-Length';
+
+const NOT_ALLOWED_ORIGIN = 'false';
 
 // CORS Request Headers
 const HEADER_ACCESS_CONTROL_REQUEST_HEADERS = 'Access-Control-Request-Headers';
@@ -26,8 +23,9 @@ const HEADER_ACCESS_CONTROL_ALLOW_ORIGIN        = 'Access-Control-Allow-Origin';
 const HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS   = 'Access-Control-Allow-Credentials'; // 'include', 'same-origin'
 const HEADER_ACCESS_CONTROL_ALLOW_METHODS       = 'Access-Control-Allow-Methods';
 const HEADER_ACCESS_CONTROL_ALLOW_HEADERS       = 'Access-Control-Allow-Headers';
-const HEADER_ACCESS_CONTROL_MAX_AGE             = 'Access-Control-Max-Age'; // Default is 5
+const HEADER_ACCESS_CONTROL_MAX_AGE             = 'Access-Control-Max-Age'; // Protocol's default is 5
 const HEADER_ACCESS_CONTROL_EXPOSE_HEADERS      = 'Access-Control-Expose-Headers';
+
 
 /**
  * CORS middleware.
@@ -37,121 +35,101 @@ const HEADER_ACCESS_CONTROL_EXPOSE_HEADERS      = 'Access-Control-Expose-Headers
  */
 function cors( $options = [] ) {
 
-    $opt = is_array( $options )
+    $opt = \is_array( $options )
         ? ( new CorsOptions() )->fromArray( $options )
-        : ( ( is_object( $options ) && ( $options instanceof CorsOptions ) )
+        : ( ( \is_object( $options ) && ( $options instanceof CorsOptions ) )
             ? $options : new CorsOptions() );
 
     return function ( &$req, &$res, &$stop ) use ( &$opt ) {
 
-        $headers = [];
-        makeOrigin( $req, $opt, $headers );
-        makeCredentials( $opt, $headers );
+        // # Origin -----------------------------------------------------------
+
+        $origin = $req->header( HEADER_ORIGIN );
+        if ( \is_null( $origin ) || $opt->origin === false ) {
+            $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, ANY );
+
+        } else {
+
+            $canIncludeRequestOrigin = $opt->origin === true ||
+                $opt->origin === ANY ||
+                (
+                    ( \is_array( $opt->origin ) || \is_string( $opt->origin ) )
+                    && isOriginAllowed( $origin, $opt->origin )
+                );
+
+            // die( ( $canIncludeRequestOrigin ? 'S' : 'N' ) . ' O:' . $origin );
+
+            if ( $canIncludeRequestOrigin ) {
+                // Sets the Origin as allowed
+                $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, $origin );
+
+                // Indicates that the Origin value influences the response
+                $res->header( HEADER_VARY, HEADER_ORIGIN );
+            } else {
+                $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, NOT_ALLOWED_ORIGIN );
+            }
+        }
+
+        // # Credentials ------------------------------------------------------
+
+        if ( $opt->credentials ) {
+            $res->header( HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS, 'true' );
+        }
+
+        // # Allowed Headers --------------------------------------------------
+
+        if ( $opt->allowedHeaders == ANY || empty( $opt->allowedHeaders ) ) {
+            $res->header( HEADER_ACCESS_CONTROL_ALLOW_HEADERS, ANY );
+        } else {
+            $value = \is_array( $opt->allowedHeaders )
+                ? \implode( ',', $opt->allowedHeaders )
+                : $opt->allowedHeaders . '';
+            $res->header( HEADER_ACCESS_CONTROL_ALLOW_HEADERS, $value );
+        }
+
+        // # Methods ----------------------------------------------------------
+
+        if ( $opt->methods === ANY || empty( $opt->methods ) ) {
+            $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, DEFAULT_ALLOWED_METHODS );
+        } else {
+            $value = \is_array( $opt->methods )
+                ? \implode( ',', $opt->methods )
+                : $opt->methods . '';
+            $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, $value );
+        }
+
+        // # Exposed Headers --------------------------------------------------
+
+        if ( ! empty( $opt->exposedHeaders ) && $opt->exposedHeaders != ANY ) {
+            $value = \is_array( $opt->exposedHeaders )
+                ? \implode( ',', $opt->exposedHeaders )
+                : $opt->exposedHeaders . '';
+            $res->header( HEADER_ACCESS_CONTROL_EXPOSE_HEADERS, $value );
+        }
+
+        // # Max Age ----------------------------------------------------------
+
+        if ( \is_numeric( $opt->maxAge ) ) {
+            $res->header( HEADER_ACCESS_CONTROL_MAX_AGE, $opt->maxAge );
+        }
+
+        // --
 
         if ( $req->method() === METHOD_OPTIONS ) { // Preflight Request
 
-            makeMethods( $opt, $headers );
-            makeAllowedHeaders( $opt, $headers );
-            makeExposedHeaders( $opt, $headers );
-            makeMaxAge( $opt, $headers );
-
-            $res->header( $headers );
-
-            if ( $opt->preflightContinue ) { // Don't stop
+            // # Preflight Continue -------------------------------------------
+            if ( $opt->preflightContinue ) {
                 return;
             }
 
-            $res->status( $opt->optionsSuccessStatus )->header( HEADER_CONTENT_LENGTH, 0 )->end();
             $stop = true;
-        } else {
-            makeOrigin( $req, $opt, $headers );
-            makeCredentials( $opt, $headers );
 
-            $res->header( $headers );
-        }
-    };
-}
-
-
-function isOriginAllowed( $requestOrigin, $originToCheck ) {
-    if ( $requestOrigin === $originToCheck ) {
-        return true;
-    }
-    if ( \is_array( $originToCheck ) ) {
-        foreach ( $originToCheck as $origin ) {
-            if ( isOriginAllowed( $requestOrigin, $origin ) ) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-
-function makeOrigin( &$req, CorsOptions &$opt, array &$headers ) {
-    $value = $opt->origin;
-    if ( empty( $value ) ) {
-        $value = ANY;
-    }
-    if ( \is_string( $value ) ) {
-        $headers[ HEADER_ACCESS_CONTROL_ALLOW_ORIGIN ] = $value;
-    } else if ( \is_array( $value ) ) {
-        // Since only a string can be set as a value, it will try to check if the request Origin
-        // is included in the array. If it is included, then it will be used. Otherwise, it will be
-        // not included in the response.
-        $requestOrigin = $req->header( HEADER_ORIGIN );
-        if ( ! isset( $requestOrigin ) ) {
-            if ( isset( $headers[ HEADER_ACCESS_CONTROL_ALLOW_ORIGIN ] ) ) {
-                unset( $headers[ HEADER_ACCESS_CONTROL_ALLOW_ORIGIN ] );
-            }
+            // # Options' success status --------------------------------------
+            $res->status( $opt->optionsSuccessStatus )->header( HEADER_CONTENT_LENGTH, 0 )->end();
             return;
         }
-        if ( isOriginAllowed( $requestOrigin, $opt->origin ) ) { // Same origin?
-            $headers[ HEADER_ACCESS_CONTROL_ALLOW_ORIGIN ] = $requestOrigin; // Reflect origin
-        }
-    }
-    // Add Vary header
-    if ( $value != ANY ) {
-        $headers[ HEADER_VARY ] = HEADER_ORIGIN;
-    }
-}
 
-
-function makeCredentials( CorsOptions &$opt, array &$headers ) {
-    if ( $opt->credentials ) {
-        $headers[ HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS ] = 'true';
-    }
-}
-
-
-function makeMethods( CorsOptions &$opt, array &$headers ) {
-    $headers[ HEADER_ACCESS_CONTROL_ALLOW_METHODS ] = \is_array( $opt->methods )
-        ? \implode( ',', $opt->methods ) : $opt->methods;
-}
-
-
-function makeAllowedHeaders( CorsOptions &$opt, array &$headers ) {
-    if ( ! \is_array( $opt->allowedHeaders ) || empty( $opt->allowedHeaders ) ) {
-        $headers[ HEADER_VARY ] = HEADER_ACCESS_CONTROL_REQUEST_HEADERS;
-        return;
-    }
-    $headers[ HEADER_ACCESS_CONTROL_REQUEST_HEADERS ] = \implode( ',', $opt->allowedHeaders );
-}
-
-
-function makeExposedHeaders( CorsOptions &$opt, array &$headers ) {
-    if ( ! is_array( $opt->exposedHeaders ) || empty( $opt->exposedHeaders ) ) {
-        return;
-    }
-    $headers[ HEADER_ACCESS_CONTROL_EXPOSE_HEADERS ] = implode( ',', $opt->exposedHeaders );
-}
-
-
-function makeMaxAge( CorsOptions &$opt, array &$headers ) {
-    if ( ! is_numeric( $opt->maxAge ) ) {
-        return;
-    }
-    $headers[ HEADER_ACCESS_CONTROL_MAX_AGE ] = $opt->maxAge;
+    };
 }
 
 ?>
