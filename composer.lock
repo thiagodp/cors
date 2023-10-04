@@ -4,27 +4,28 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6ba528963d5db2cec8c9b8f1ee5eb870",
+    "content-hash": "74b13ea2dbb962c1ebefe79e39b33aa7",
     "packages": [],
     "packages-dev": [
         {
             "name": "kahlan/kahlan",
-            "version": "5.2.3",
+            "version": "5.2.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/kahlan/kahlan.git",
-                "reference": "076da1c9747da903a510ec80e44f15536d23bacb"
+                "reference": "b306b275316c35c96da931fb619387e82eb61760"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kahlan/kahlan/zipball/076da1c9747da903a510ec80e44f15536d23bacb",
-                "reference": "076da1c9747da903a510ec80e44f15536d23bacb",
+                "url": "https://api.github.com/repos/kahlan/kahlan/zipball/b306b275316c35c96da931fb619387e82eb61760",
+                "reference": "b306b275316c35c96da931fb619387e82eb61760",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.1"
+                "php": ">=7.2"
             },
             "require-dev": {
+                "rector/rector": "^0.18",
                 "squizlabs/php_codesniffer": "^3.4"
             },
             "bin": [
@@ -61,22 +62,22 @@
             ],
             "support": {
                 "issues": "https://github.com/kahlan/kahlan/issues",
-                "source": "https://github.com/kahlan/kahlan/tree/5.2.3"
+                "source": "https://github.com/kahlan/kahlan/tree/5.2.5"
             },
-            "time": "2023-03-11T12:11:07+00:00"
+            "time": "2023-09-12T10:35:16+00:00"
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.10.11",
+            "version": "1.10.37",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "8aa62e6ea8b58ffb650e02940e55a788cbc3fe21"
+                "reference": "058ba07e92f744d4dcf6061ae75283d0c6456f2e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/8aa62e6ea8b58ffb650e02940e55a788cbc3fe21",
-                "reference": "8aa62e6ea8b58ffb650e02940e55a788cbc3fe21",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/058ba07e92f744d4dcf6061ae75283d0c6456f2e",
+                "reference": "058ba07e92f744d4dcf6061ae75283d0c6456f2e",
                 "shasum": ""
             },
             "require": {
@@ -125,21 +126,27 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-04-04T19:17:42+00:00"
+            "time": "2023-10-02T16:18:37+00:00"
         },
         {
             "name": "phputil/router",
-            "version": "v0.2.11",
+            "version": "v0.2.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thiagodp/router.git",
-                "reference": "b783cef5325a0194f90ec5f1235e46227ac96b94"
+                "reference": "39ddcc958fc89f8bdc6df83ca4ea92d34e56f57a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thiagodp/router/zipball/b783cef5325a0194f90ec5f1235e46227ac96b94",
-                "reference": "b783cef5325a0194f90ec5f1235e46227ac96b94",
+                "url": "https://api.github.com/repos/thiagodp/router/zipball/39ddcc958fc89f8bdc6df83ca4ea92d34e56f57a",
+                "reference": "39ddcc958fc89f8bdc6df83ca4ea92d34e56f57a",
                 "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "ext-pcre": "*",
+                "php": ">=7.4"
             },
             "require-dev": {
                 "kahlan/kahlan": "^5.2",
@@ -164,9 +171,9 @@
             "description": "ExpressJS-like router for PHP",
             "support": {
                 "issues": "https://github.com/thiagodp/router/issues",
-                "source": "https://github.com/thiagodp/router/tree/v0.2.11"
+                "source": "https://github.com/thiagodp/router/tree/v0.2.13"
             },
-            "time": "2023-04-07T00:40:29+00:00"
+            "time": "2023-07-18T21:43:02+00:00"
         }
     ],
     "aliases": [],
@@ -174,7 +181,9 @@
     "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "ext-mbstring": "*"
+    },
     "platform-dev": [],
     "plugin-api-version": "2.3.0"
 }
