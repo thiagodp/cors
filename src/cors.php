@@ -4,6 +4,13 @@ namespace phputil\cors;
 require_once __DIR__ . '/CorsOptions.php';
 require_once __DIR__ . '/http.php';
 
+use function implode;
+use function is_array;
+use function is_object;
+use function is_null;
+use function is_numeric;
+use function is_string;
+
 /**
  * @see Lastest CORS standard at https://fetch.spec.whatwg.org/#cors-protocol
  */
@@ -35,9 +42,9 @@ const HEADER_ACCESS_CONTROL_EXPOSE_HEADERS      = 'Access-Control-Expose-Headers
  */
 function cors( $options = [] ) {
 
-    $opt = \is_array( $options )
+    $opt = is_array( $options )
         ? ( new CorsOptions() )->fromArray( $options )
-        : ( ( \is_object( $options ) && ( $options instanceof CorsOptions ) )
+        : ( ( is_object( $options ) && ( $options instanceof CorsOptions ) )
             ? $options : new CorsOptions() );
 
     return function ( &$req, &$res, &$stop ) use ( &$opt ) {
@@ -45,7 +52,7 @@ function cors( $options = [] ) {
         // # Origin -----------------------------------------------------------
 
         $origin = $req->header( HEADER_ORIGIN );
-        if ( \is_null( $origin ) || $opt->origin === false ) {
+        if ( is_null( $origin ) || $opt->origin === false ) {
             $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, ANY );
 
         } else {
@@ -53,7 +60,7 @@ function cors( $options = [] ) {
             $canIncludeRequestOrigin = $opt->origin === true ||
                 $opt->origin === ANY ||
                 (
-                    ( \is_array( $opt->origin ) || \is_string( $opt->origin ) )
+                    ( is_array( $opt->origin ) || is_string( $opt->origin ) )
                     && isOriginAllowed( $origin, $opt->origin )
                 );
 
@@ -81,8 +88,8 @@ function cors( $options = [] ) {
         if ( $opt->allowedHeaders == ANY || empty( $opt->allowedHeaders ) ) {
             $res->header( HEADER_ACCESS_CONTROL_ALLOW_HEADERS, ANY );
         } else {
-            $value = \is_array( $opt->allowedHeaders )
-                ? \implode( ',', $opt->allowedHeaders )
+            $value = is_array( $opt->allowedHeaders )
+                ? implode( ',', $opt->allowedHeaders )
                 : $opt->allowedHeaders . '';
             $res->header( HEADER_ACCESS_CONTROL_ALLOW_HEADERS, $value );
         }
@@ -92,8 +99,8 @@ function cors( $options = [] ) {
         if ( $opt->methods === ANY || empty( $opt->methods ) ) {
             $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, DEFAULT_ALLOWED_METHODS );
         } else {
-            $value = \is_array( $opt->methods )
-                ? \implode( ',', $opt->methods )
+            $value = is_array( $opt->methods )
+                ? implode( ',', $opt->methods )
                 : $opt->methods . '';
             $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, $value );
         }
@@ -101,15 +108,15 @@ function cors( $options = [] ) {
         // # Exposed Headers --------------------------------------------------
 
         if ( ! empty( $opt->exposedHeaders ) && $opt->exposedHeaders != ANY ) {
-            $value = \is_array( $opt->exposedHeaders )
-                ? \implode( ',', $opt->exposedHeaders )
+            $value = is_array( $opt->exposedHeaders )
+                ? implode( ',', $opt->exposedHeaders )
                 : $opt->exposedHeaders . '';
             $res->header( HEADER_ACCESS_CONTROL_EXPOSE_HEADERS, $value );
         }
 
         // # Max Age ----------------------------------------------------------
 
-        if ( \is_numeric( $opt->maxAge ) ) {
+        if ( is_numeric( $opt->maxAge ) ) {
             $res->header( HEADER_ACCESS_CONTROL_MAX_AGE, $opt->maxAge );
         }
 

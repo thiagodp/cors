@@ -1,6 +1,14 @@
 <?php
 namespace phputil\cors;
 
+use RuntimeException;
+use function array_key_exists;
+use function explode;
+use function get_object_vars;
+use function is_array;
+use function is_numeric;
+use function is_string;
+
 const ANY = '*';
 const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,OPTIONS,POST,PUT,DELETE,PATCH';
 
@@ -45,9 +53,9 @@ class CorsOptions {
      * @return CorsOptions
      */
     public function fromArray( array $options, $validate = true ) {
-        $attributes = \get_object_vars( $this );
+        $attributes = get_object_vars( $this );
         foreach ( $options as $key => $value ) {
-            if ( \array_key_exists( $key, $attributes ) ) {
+            if ( array_key_exists( $key, $attributes ) ) {
                 $this->{ $key } = $value;
             }
         }
@@ -146,24 +154,24 @@ const MSG_INVALID_SUCCESS_STATUS = 'Invalid success status code. It should be 20
 function validateOptions( CorsOptions $co ) {
     // Methods
     $methodsToValidate = [];
-    if ( \is_string( $co->methods ) ) {
-        $methodsToValidate = \explode( ',', $co->methods );
-    } else if ( \is_array( $co->methods ) ) {
+    if ( is_string( $co->methods ) ) {
+        $methodsToValidate = explode( ',', $co->methods );
+    } else if ( is_array( $co->methods ) ) {
         $methodsToValidate = $co->methods;
     } else {
-        throw new \RuntimeException( MSG_INVALID_METHODS_TYPE );
+        throw new RuntimeException( MSG_INVALID_METHODS_TYPE );
     }
     // HTTP methods
     foreach ( $methodsToValidate as $m ) {
         if ( ! isHttpMethodValid( trim( $m ) ) ) {
-            throw new \RuntimeException( MSG_INVALID_HTTP_METHOD );
+            throw new RuntimeException( MSG_INVALID_HTTP_METHOD );
         }
     }
     // Status
-    if ( ! \is_numeric( $co->optionsSuccessStatus ) ||
+    if ( ! is_numeric( $co->optionsSuccessStatus ) ||
         ! ( $co->optionsSuccessStatus == 200 || $co->optionsSuccessStatus == 204 )
     ) {
-        throw new \RuntimeException( MSG_INVALID_SUCCESS_STATUS );
+        throw new RuntimeException( MSG_INVALID_SUCCESS_STATUS );
     }
 }
 

@@ -1,6 +1,10 @@
 <?php
 namespace phputil\cors;
 
+use function mb_strtoupper;
+use function array_search;
+use function is_array;
+
 // HTTP METHODS ---------------------------------------------------------------
 
 const METHOD_GET        = 'GET';
@@ -24,14 +28,14 @@ const SUPPORTED_METHODS = [
 // UTILITIES ------------------------------------------------------------------
 
 function isHttpMethodValid( $method ) {
-    return \array_search( \mb_strtoupper( $method ), SUPPORTED_METHODS ) !== false;
+    return array_search( mb_strtoupper( $method ), SUPPORTED_METHODS ) !== false;
 }
 
 function isOriginAllowed( $requestOrigin, $originToCheck ) {
     if ( $requestOrigin === $originToCheck ) {
         return true;
     }
-    return \is_array( $originToCheck ) && \in_array( $requestOrigin, $originToCheck );
+    return is_array( $originToCheck ) && in_array( $requestOrigin, $originToCheck );
 }
 
 ?>
