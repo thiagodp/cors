@@ -4,10 +4,6 @@
     "type": "library",
     "license": "MIT",
     "scripts": {
-        "server-start": [
-            "Composer\\Config::disableProcessTimeout",
-            "php -S localhost:888888"
-        ],
         "test": "kahlan",
         "test2": "kahlan --reporter=verbose",
         "cov": "kahlan --coverage",
