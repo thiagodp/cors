@@ -4,29 +4,28 @@
     "type": "library",
     "license": "MIT",
     "scripts": {
+        "server-start": [
+            "Composer\\Config::disableProcessTimeout",
+            "php -S localhost:888888"
+        ],
         "test": "kahlan",
         "test2": "kahlan --reporter=verbose",
         "cov": "kahlan --coverage",
-        "check": "phpstan analyze src --level=4"
+        "check": "phpstan analyze src"
     },
     "require": {
         "ext-mbstring": "*"
     },
     "require-dev": {
         "kahlan/kahlan": "^5.2",
-        "phputil/router": "^0.2.6",
-        "phpstan/phpstan": "^1.9"
+        "phputil/router": "^0.2.14",
+        "phpstan/phpstan": "^1.9",
+        "symfony/http-client": "^5.4"
     },
     "autoload": {
         "psr-4": {
             "phputil\\cors\\": "src/"
         },
         "files": [ "src/cors.php" ]
-    },
-    "authors": [
-        {
-            "name": "Thiago Delgado Pinto",
-            "email": "thiago-dp@bol.com.br"
-        }
-    ]
+    }
 }

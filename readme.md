@@ -11,7 +11,7 @@
 
 ## Installation
 
-> Requires phputil/router **v0.2.11+**
+> Requires phputil/router **v0.2.14+**
 
 ```bash
 composer require phputil/cors
