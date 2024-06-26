@@ -1,6 +1,9 @@
 <?php
 namespace phputil\cors;
 
+use phputil\router\HttpRequest;
+use phputil\router\HttpResponse;
+
 require_once __DIR__ . '/CorsOptions.php';
 require_once __DIR__ . '/http.php';
 
@@ -23,7 +26,8 @@ const HEADER_CONTENT_LENGTH = 'Content-Length';
 const NOT_ALLOWED_ORIGIN = 'false';
 
 // CORS Request Headers
-const HEADER_ACCESS_CONTROL_REQUEST_HEADERS = 'Access-Control-Request-Headers';
+const REQUEST_HEADER__ACCESS_CONTROL_REQUEST_METHOD     = 'Access-Control-Request-Method';
+const REQUEST_HEADER__ACCESS_CONTROL_REQUEST_HEADERS    = 'Access-Control-Request-Headers';
 
 // CORS Response Headers
 const HEADER_ACCESS_CONTROL_ALLOW_ORIGIN        = 'Access-Control-Allow-Origin';      // URL, 'null' or '*'
@@ -47,7 +51,7 @@ function cors( $options = [] ) {
         : ( ( is_object( $options ) && ( $options instanceof CorsOptions ) )
             ? $options : new CorsOptions() );
 
-    return function ( &$req, &$res, &$stop ) use ( &$opt ) {
+    return function ( HttpRequest &$req, HttpResponse &$res, bool &$stop ) use ( &$opt ) {
 
         // # Origin -----------------------------------------------------------
 
@@ -97,7 +101,16 @@ function cors( $options = [] ) {
         // # Methods ----------------------------------------------------------
 
         if ( $opt->methods === ANY || empty( $opt->methods ) ) {
-            $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, DEFAULT_ALLOWED_METHODS );
+            $header = $req->header( REQUEST_HEADER__ACCESS_CONTROL_REQUEST_METHOD );            
+            if ( ! empty( $header ) ) {
+                if ( isHttpMethodValid( $header ) ) {
+                    $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, mb_strtoupper( $header ) );
+                } else {
+                    $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, 'GET' ); // Only 'GET' on invalid value
+                }
+            } else {
+                $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, DEFAULT_ALLOWED_METHODS );
+            }
         } else {
             $value = is_array( $opt->methods )
                 ? implode( ',', $opt->methods )
@@ -124,15 +137,22 @@ function cors( $options = [] ) {
 
         if ( $req->method() === METHOD_OPTIONS ) { // Preflight Request
 
+            // # Options' success status --------------------------------------
+
+            $res->status( 204 ); // No Content
+            $res->header( HEADER_CONTENT_LENGTH, 0 );
+
+            if ( ! empty( $opt->optionsSuccessStatus ) && $opt->optionsSuccessStatus != 204 ) {
+                $res->status( $opt->optionsSuccessStatus );    
+            }
+
             // # Preflight Continue -------------------------------------------
             if ( $opt->preflightContinue ) {
                 return;
             }
 
             $stop = true;
-
-            // # Options' success status --------------------------------------
-            $res->status( $opt->optionsSuccessStatus )->header( HEADER_CONTENT_LENGTH, 0 )->end();
+            $res->end();
             return;
         }
 

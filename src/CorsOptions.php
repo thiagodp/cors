@@ -24,7 +24,7 @@ class CorsOptions {
     public $origin = true;
 
     /** @var string|array Equivalent to `Access-Control-Allow-Methods` */
-    public $methods = DEFAULT_ALLOWED_METHODS;
+    public $methods = [];
 
     /** @var bool Equivalent to `Access-Control-Allow-Credentials` */
     public $credentials = true;
@@ -154,7 +154,7 @@ const MSG_INVALID_SUCCESS_STATUS = 'Invalid success status code. It should be 20
 function validateOptions( CorsOptions $co ) {
     // Methods
     $methodsToValidate = [];
-    if ( is_string( $co->methods ) ) {
+    if ( is_string( $co->methods ) && ! empty( $co->methods ) ) {
         $methodsToValidate = explode( ',', $co->methods );
     } else if ( is_array( $co->methods ) ) {
         $methodsToValidate = $co->methods;
@@ -168,8 +168,9 @@ function validateOptions( CorsOptions $co ) {
         }
     }
     // Status
-    if ( ! is_numeric( $co->optionsSuccessStatus ) ||
-        ! ( $co->optionsSuccessStatus == 200 || $co->optionsSuccessStatus == 204 )
+    if ( ! is_numeric( $co->optionsSuccessStatus ) 
+        || $co->optionsSuccessStatus < 200
+        || $co->optionsSuccessStatus > 299
     ) {
         throw new RuntimeException( MSG_INVALID_SUCCESS_STATUS );
     }

@@ -63,7 +63,8 @@ function cors( array|CorOptions $options ): callable;
 ### `methods`
 - Configures the response header `Access-Control-Allow-Methods`.
 - Allowed types: `string`, `array`.
-- The **default value** is `GET,HEAD,OPTIONS,POST,PUT,DELETE,PATCH`.
+- The **default value** is `GET,HEAD,OPTIONS,POST,PUT,DELETE,PATCH` when the request header `Access-Control-Request-Method` is _not_ defined.
+- When the request header `Access-Control-Request-Method` is defined, the response header `Access-Control-Allow-Methods` will return the received method, unless the option `methods` is defined.
 - HTTP methods in a `string` must be separated by **comma**.
 
 ### `allowedHeaders`

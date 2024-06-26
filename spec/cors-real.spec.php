@@ -93,6 +93,19 @@ describe( 'cors-real', function() {
             expect( $allowedOrigin )->toEqual( $origin );
         } );
 
+        it( 'should return the header "Access-Control-Allow-Methods" with the value of "Access-Control-Request-Method" when defined', function() {
+
+            $response = $this->client->request( 'OPTIONS', $this->url, [
+                'headers' => [
+                    'Access-Control-Request-Method' => 'POST'
+                ],
+                'timeout' => 2
+            ] );
+
+            $value = $response->getHeaders()[ 'access-control-allow-methods' ][ 0 ];
+            expect( $value )->toEqual( 'POST' );
+        } );        
+
     } );
 
 } );

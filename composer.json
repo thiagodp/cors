@@ -14,7 +14,7 @@
     },
     "require-dev": {
         "kahlan/kahlan": "^5.2",
-        "phputil/router": "^0.2.14",
+        "phputil/router": "^0.3.0",
         "phpstan/phpstan": "^1.9",
         "symfony/http-client": "^5.4"
     },
