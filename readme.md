@@ -1,4 +1,5 @@
 [![Version](https://poser.pugx.org/phputil/cors/v?style=flat-square)](https://packagist.org/packages/phputil/cors)
+![Build](https://github.com/thiagodp/cors/actions/workflows/ci.yml/badge.svg?style=flat)
 [![License](https://poser.pugx.org/phputil/cors/license?style=flat-square)](https://packagist.org/packages/phputil/cors)
 
 # phputil/cors
