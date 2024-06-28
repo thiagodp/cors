@@ -154,6 +154,19 @@ describe( 'cors-fake', function() {
             expect( $value )->toBeNull();
         } );
 
+    } ); // by default
+
+
+    describe('with origin', function() {
+
+        it( 'should include the header "Access-Control-Allow-Origin" with the first origin when the "Origin" header is not sent.'
+        , function() {
+            $fn = cors( [ 'origin' => [ 'foo.com', 'bar.com' ] ] );
+            $stop = false;
+            $fn( $this->req, $this->res, $stop );
+            $value = $this->res->getHeader( 'Access-Control-Allow-Origin' );
+            expect( $value )->toBe( 'foo.com' );
+        } );
     } );
 
 
@@ -192,7 +205,7 @@ describe( 'cors-fake', function() {
     } );
 
     it( 'should include the header "Access-Control-Allow-Origin" with the first origin when it receives the header "Origin" with a value that is NOT in the list defined in the option "origin"', function() {
-        $origin = 'none.com';
+        $origin = 'other.com';
         $this->req->withHeader( 'Origin', $origin );
         $fn = cors( [ 'origin' => [ 'foo.com', 'bar.org' ] ] );
         $stop = false;

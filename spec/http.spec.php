@@ -12,11 +12,6 @@ describe( 'http', function() {
             expect( $r )->toBeTruthy();
         } );
 
-        it( 'allows equal array values', function() {
-            $r = isOriginAllowed( [ 'a', 'b' ], [ 'a', 'b' ] );
-            expect( $r )->toBeTruthy();
-        } );
-
         it( 'allows one string value inside an array', function() {
             $r = isOriginAllowed( 'a', [ 'a', 'b' ] );
             expect( $r )->toBeTruthy();

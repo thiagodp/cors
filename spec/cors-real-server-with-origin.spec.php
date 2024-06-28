@@ -2,17 +2,18 @@
 
 use Symfony\Component\HttpClient\HttpClient;
 
-$server = require( __DIR__ .'/../test-server/server.php' );
-$localServer = $server[ 'domain' ] . ':' . $server[ 'port' ];
+describe( 'cors-real-server-with-origin', function() {
 
-describe( 'cors-real-server-with-origin', function() use ( $localServer ) {
+    beforeAll( function() {
 
-    beforeAll( function() use ( $localServer ) {
+        $server = require( __DIR__ .'/../test-server/server.php' );
+        $localServer = $server[ 'domain' ] . ':' . $server[ 'port' ];
 
         $this->server = $localServer;
 
         // HTTP Server
-        $cmd = 'cd test-server && cd with-origin && php -S ' . $this->server;
+        $upperDir = dirname( __DIR__ );
+        $cmd = "cd $upperDir && " . 'cd test-server && cd with-origin && php -S ' . $this->server;
         $spec = [
             [ 'pipe', 'r' ], // stdin
             [ 'pipe', 'w' ], // stdout
@@ -66,6 +67,21 @@ describe( 'cors-real-server-with-origin', function() use ( $localServer ) {
                     'Origin' => 'http://different-domain.com'
                 ],
                 'timeout' => 2
+            ] );
+
+            // var_dump( $response->getHeaders() );
+
+            expect( $response->getStatusCode() )->toBe( 403 );
+        } );
+
+
+        it( 'should return the status code 403 (Forbidden) when the origin is not allowed', function() {
+
+            $response = $this->client->request( 'OPTIONS', $this->url, [
+                'headers' => [
+                    'Origin' => 'http://different-domain.com'
+                ],
+                'timeout' => 2
 
             ] );
 
@@ -73,12 +89,21 @@ describe( 'cors-real-server-with-origin', function() use ( $localServer ) {
         } );
 
 
-        it( 'should return the status code 403 (Forbidden) when the origin is not sent', function() {
+        it( 'should return the first allowed origin when the origin is not sent', function() {
 
             $response = $this->client->request( 'OPTIONS', $this->url, [
                 'timeout' => 2
             ] );
+            $headers = $response->getHeaders( false ); // false to avoid throwing an exception when a 3xx, 4xx or 5xx code is returned !
+            expect( isset( $headers[ 'access-control-allow-origin' ] ) )->toBeTruthy();
+            expect( $headers[ 'access-control-allow-origin' ][ 0 ] )->toEqual( $this->server );
+        } );
 
+        it( 'should return status Forbidden the origin is not sent', function() {
+
+            $response = $this->client->request( 'OPTIONS', $this->url, [
+                'timeout' => 2
+            ] );
             expect( $response->getStatusCode() )->toBe( 403 );
         } );
 
@@ -89,17 +114,6 @@ describe( 'cors-real-server-with-origin', function() use ( $localServer ) {
                 'headers' => [
                     'Origin' => 'http://different-domain.com'
                 ],
-                'timeout' => 2
-            ] );
-
-            $headers = $response->getHeaders( false ); // false to avoid throwing an exception when a 3xx, 4xx or 5xx code is returned !
-            expect( $headers )->toContainKey( 'access-control-allow-origin' );
-            expect( $headers[ 'access-control-allow-origin' ][ 0 ] )->toEqual( $this->server );
-        } );
-
-        it( 'should return the first allowed origin when the origin is not sent', function() {
-
-            $response = $this->client->request( 'OPTIONS', $this->url, [
                 'timeout' => 2
             ] );
 

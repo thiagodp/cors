@@ -4,8 +4,8 @@
     "type": "library",
     "license": "MIT",
     "scripts": {
-        "test": "kahlan",
-        "test2": "kahlan --reporter=verbose",
+        "test": "kahlan --cc",
+        "test2": "kahlan --cc --reporter=verbose",
         "cov": "kahlan --coverage",
         "check": "phpstan analyze src"
     },
