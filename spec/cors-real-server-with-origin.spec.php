@@ -2,14 +2,16 @@
 
 use Symfony\Component\HttpClient\HttpClient;
 
-describe( 'cors-real-server-with-origin', function() {
+$domain = require( __DIR__ .'/../test-server/domain.php' );
 
-    beforeAll( function() {
+describe( 'cors-real-server-with-origin', function() use ( $domain) {
 
-        $this->server = '0.0.0.0:8889';
+    beforeAll( function() use ( $domain ) {
+
+        $this->server = $domain . ':8889';
 
         // HTTP Server
-        $cmd = 'cd test-server-with-origin && php -S ' . $this->server;
+        $cmd = 'cd test-server && cd with-origin && php -S ' . $this->server;
         $spec = [
             [ 'pipe', 'r' ], // stdin
             [ 'pipe', 'w' ], // stdout
@@ -25,7 +27,6 @@ describe( 'cors-real-server-with-origin', function() {
 
         // HTTP Client
         $this->client = HttpClient::create();
-
     } );
 
 
