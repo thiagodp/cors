@@ -101,8 +101,11 @@ function cors( $options = [] ) {
                 } else {
                     $originToSend = is_array( $opt->origin ) ? $opt->origin[ 0 ] ?? INVALID_ORIGIN_VALUE : $opt->origin;
                     $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, $originToSend );
-                    $res->status( STATUS_FORBIDDEN );
-                    $isOriginForbidden = true;
+
+                    if ( $requestMethod === METHOD_OPTIONS ) {
+                        $res->status( STATUS_FORBIDDEN );
+                        $isOriginForbidden = true;
+                    }
                 }
         }
 
@@ -112,7 +115,7 @@ function cors( $options = [] ) {
 
             $preflightRequestedMethod = $req->header( REQUEST_HEADER__ACCESS_CONTROL_REQUEST_METHOD );
 
-            if ( $requestMethod === 'OPTIONS' ) {
+            if ( $requestMethod === METHOD_OPTIONS ) {
 
                 if ( ! is_null( $preflightRequestedMethod ) ) {
                     if ( isHttpMethodValid( $preflightRequestedMethod ) ) {
