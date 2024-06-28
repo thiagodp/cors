@@ -2,14 +2,14 @@
 
 use Symfony\Component\HttpClient\HttpClient;
 
-describe( 'cors-real', function() {
+describe( 'cors-real-server-default', function() {
 
     beforeAll( function() {
 
         $server = '127.0.0.1:8888';
 
         // HTTP Server
-        $cmd = 'cd test-demo && php -S ' . $server;
+        $cmd = 'cd test-server-default && php -S ' . $server;
         $spec = [
             [ 'pipe', 'r' ], // stdin
             [ 'pipe', 'w' ], // stdout
@@ -51,6 +51,9 @@ describe( 'cors-real', function() {
             ] );
 
             expect( $response->getStatusCode() )->toBe( 204 );
+            $headers = $response->getHeaders();
+            expect( $headers )->toContainKey( 'access-control-allow-origin' );
+            expect( $headers[ 'access-control-allow-origin' ][ 0 ] )->toEqual( 'http://different-domain.com' );
         } );
 
 
@@ -105,6 +108,22 @@ describe( 'cors-real', function() {
             $value = $response->getHeaders()[ 'access-control-allow-methods' ][ 0 ];
             expect( $value )->toEqual( 'POST' );
         } );        
+
+    } );
+
+    describe( 'with an origin list', function() {
+
+        it( 'should return status code 403 (Forbidden) when the origin is not allowed', function() {
+
+            $response = $this->client->request( 'OPTIONS', $this->url, [
+                'headers' => [
+                    'Origin' => 'http://different-domain.com'
+                ],
+                'timeout' => 2
+            ] );
+
+            expect( $response->getStatusCode() )->toBe( 204 );
+        } );
 
     } );
 

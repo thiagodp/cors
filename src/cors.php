@@ -55,6 +55,8 @@ function cors( $options = [] ) {
 
         // # Origin -----------------------------------------------------------
 
+        $isOriginForbidden = false;
+
         $origin = $req->header( HEADER_ORIGIN );
         if ( is_null( $origin ) || $opt->origin === false ) {
             $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, ANY );
@@ -78,6 +80,8 @@ function cors( $options = [] ) {
                 $res->header( HEADER_VARY, HEADER_ORIGIN );
             } else {
                 $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, NOT_ALLOWED_ORIGIN );
+                $res->status( STATUS_FORBIDDEN );
+                $isOriginForbidden = true;
             }
         }
 
@@ -137,13 +141,16 @@ function cors( $options = [] ) {
 
         if ( $req->method() === METHOD_OPTIONS ) { // Preflight Request
 
-            // # Options' success status --------------------------------------
-
-            $res->status( 204 ); // No Content
             $res->header( HEADER_CONTENT_LENGTH, 0 );
 
-            if ( ! empty( $opt->optionsSuccessStatus ) && $opt->optionsSuccessStatus != 204 ) {
-                $res->status( $opt->optionsSuccessStatus );    
+            if ( ! $isOriginForbidden ) {
+
+                $res->status( STATUS_NO_CONTENT ); 
+
+                // # Options' success status --------------------------------------                
+                if ( ! empty( $opt->optionsSuccessStatus ) && $opt->optionsSuccessStatus != 204 ) {
+                    $res->status( $opt->optionsSuccessStatus );    
+                }
             }
 
             // # Preflight Continue -------------------------------------------

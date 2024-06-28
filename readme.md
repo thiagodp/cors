@@ -54,6 +54,8 @@ function cors( array|CorOptions $options ): callable;
   will return `*` - aiming to accept any origin. Other options will block the request.
 - Using `*` may not work when using credentials or using httpS. Prefer sending the request header `Origin` whenever possible.
 
+Note: The returned status code for an origin that is not in the configured list is `403` (Forbidden).
+
 ### `credentials`
 - Configures the response header `Access-Control-Allow-Credentials`.
 - Allowed types: `bool`.

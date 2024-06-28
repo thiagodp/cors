@@ -5,6 +5,11 @@ use function mb_strtoupper;
 use function array_search;
 use function is_array;
 
+// HTTP STATUS CODES ----------------------------------------------------------
+
+const STATUS_NO_CONTENT = 204;
+const STATUS_FORBIDDEN = 403;
+
 // HTTP METHODS ---------------------------------------------------------------
 
 const METHOD_GET        = 'GET';

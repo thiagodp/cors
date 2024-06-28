@@ -16,7 +16,8 @@
         "kahlan/kahlan": "^5.2",
         "phputil/router": "^0.3.0",
         "phpstan/phpstan": "^1.9",
-        "symfony/http-client": "^5.4"
+        "symfony/http-client": "^5.4",
+        "illuminate/http": "^10.48"
     },
     "autoload": {
         "psr-4": {
