@@ -8,7 +8,7 @@ use \phputil\router\FakeHttpResponse;
 
 use function phputil\cors\cors;
 
-describe( 'cors', function() {
+describe( 'cors-fake', function() {
 
     $this->req = null;
     $this->res = null;
@@ -72,6 +72,7 @@ describe( 'cors', function() {
 
         it( 'includes the header "Access-Control-Allow-Methods" with the usual HTTP methods as value, when the header "Access-Control-Request-Method" is not defined', function() {
             $fn = cors();
+            $this->req->withMethod( 'OPTIONS' );
             $this->req->withHeader( 'Origin', 'foo.com' );
             $stop = false;
             $fn( $this->req, $this->res, $stop );
@@ -87,6 +88,7 @@ describe( 'cors', function() {
 
         it( 'includes the header "Access-Control-Allow-Methods" with the value of "Access-Control-Request-Method" when received and the option "methods" is not defined', function() {
             $fn = cors();
+            $this->req->withMethod( 'OPTIONS' );
             $this->req->withHeader( 'Origin', 'foo.com' );
             $this->req->withHeader( 'Access-Control-Request-Method', 'POST' );
             $stop = false;
@@ -99,11 +101,12 @@ describe( 'cors', function() {
             expect( $value )->not->toContain( 'PUT' );
             expect( $value )->not->toContain( 'DELETE' );
             expect( $value )->not->toContain( 'PATCH' );
-        } );        
+        } );
 
 
         it( 'includes the header "Access-Control-Allow-Methods" with the value of the option "methods" even when "Access-Control-Request-Method" is defined', function() {
             $fn = cors( [ 'methods' => 'PUT,DELETE' ] );
+            $this->req->withMethod( 'OPTIONS' );
             $this->req->withHeader( 'Origin', 'foo.com' );
             $this->req->withHeader( 'Access-Control-Request-Method', 'POST' );
             $stop = false;
@@ -115,7 +118,7 @@ describe( 'cors', function() {
             expect( $value )->not->toContain( 'HEAD' );
             expect( $value )->not->toContain( 'OPTIONS' );
             expect( $value )->not->toContain( 'PATCH' );
-        } );        
+        } );
 
 
         it( 'returns the status 204 in a Preflight request', function() {
@@ -188,17 +191,17 @@ describe( 'cors', function() {
         expect( $value )->toBe( $origin );
     } );
 
-    it( 'should include the header "Access-Control-Allow-Origin" with the value "false" when it receives the header "Origin" with a value that is NOT in the list defined in the option "origin"', function() {        
+    it( 'should include the header "Access-Control-Allow-Origin" with the first origin when it receives the header "Origin" with a value that is NOT in the list defined in the option "origin"', function() {
         $origin = 'none.com';
         $this->req->withHeader( 'Origin', $origin );
         $fn = cors( [ 'origin' => [ 'foo.com', 'bar.org' ] ] );
         $stop = false;
         $fn( $this->req, $this->res, $stop );
         $value = $this->res->getHeader( 'Access-Control-Allow-Origin' );
-        expect( $value )->toBe( 'false' );
+        expect( $value )->toBe( 'foo.com' );
     } );
 
-    it( 'should include the header "Access-Control-Allow-Origin" when it receives the header "Origin" with a value that is that as same the defined in the option "origin"', function() {        
+    it( 'should include the header "Access-Control-Allow-Origin" when it receives the header "Origin" with a value that is that as same the defined in the option "origin"', function() {
         $origin = 'bar.org';
         $this->req->withHeader( 'Origin', $origin );
         $fn = cors( [ 'origin' => $origin ] );
@@ -208,14 +211,14 @@ describe( 'cors', function() {
         expect( $value )->toBe( $origin );
     } );
 
-    it( 'should include the header "Access-Control-Allow-Origin" with the value "false" when it receives the header "Origin" with a value that is NOT the same as the defined in the option "origin"', function() {                
+    it( 'should include the header "Access-Control-Allow-Origin" with the first allowed origin when it receives the header "Origin" with a value that is NOT the same as the defined in the option "origin"', function() {
         $origin = 'bar.org';
         $this->req->withHeader( 'Origin', $origin );
         $fn = cors( [ 'origin' => 'foo.com' ] );
         $stop = false;
         $fn( $this->req, $this->res, $stop );
         $value = $this->res->getHeader( 'Access-Control-Allow-Origin' );
-        expect( $value )->toBe( 'false' );
+        expect( $value )->toBe( 'foo.com' );
     } );
 
 } );

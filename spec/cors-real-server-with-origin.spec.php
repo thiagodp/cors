@@ -6,10 +6,10 @@ describe( 'cors-real-server-with-origin', function() {
 
     beforeAll( function() {
 
-        $server = '127.0.0.1:8889';
+        $this->server = '127.0.0.1:8889';
 
         // HTTP Server
-        $cmd = 'cd test-server-with-origin && php -S ' . $server;
+        $cmd = 'cd test-server-with-origin && php -S ' . $this->server;
         $spec = [
             [ 'pipe', 'r' ], // stdin
             [ 'pipe', 'w' ], // stdout
@@ -21,7 +21,7 @@ describe( 'cors-real-server-with-origin', function() {
         }
 
         // URL
-        $this->url = 'http://' . $server;
+        $this->url = 'http://' . $this->server;
 
         // HTTP Client
         $this->client = HttpClient::create();
@@ -68,10 +68,6 @@ describe( 'cors-real-server-with-origin', function() {
             ] );
 
             expect( $response->getStatusCode() )->toBe( 403 );
-
-            $headers = $response->getHeaders( false ); // false to avoid throwing an exception when a 3xx, 4xx or 5xx code is returned !
-            expect( $headers )->toContainKey( 'access-control-allow-origin' );
-            expect( $headers[ 'access-control-allow-origin' ][ 0 ] )->toEqual( 'false' );
         } );
 
 
@@ -82,10 +78,32 @@ describe( 'cors-real-server-with-origin', function() {
             ] );
 
             expect( $response->getStatusCode() )->toBe( 403 );
+        } );
+
+
+        it( 'should return the first allowed origin when the sent origin is not allowed', function() {
+
+            $response = $this->client->request( 'OPTIONS', $this->url, [
+                'headers' => [
+                    'Origin' => 'http://different-domain.com'
+                ],
+                'timeout' => 2
+            ] );
 
             $headers = $response->getHeaders( false ); // false to avoid throwing an exception when a 3xx, 4xx or 5xx code is returned !
             expect( $headers )->toContainKey( 'access-control-allow-origin' );
-            expect( $headers[ 'access-control-allow-origin' ][ 0 ] )->toEqual( 'false' );
+            expect( $headers[ 'access-control-allow-origin' ][ 0 ] )->toEqual( $this->server );
+        } );
+
+        it( 'should return the first allowed origin when the origin is not sent', function() {
+
+            $response = $this->client->request( 'OPTIONS', $this->url, [
+                'timeout' => 2
+            ] );
+
+            $headers = $response->getHeaders( false ); // false to avoid throwing an exception when a 3xx, 4xx or 5xx code is returned !
+            expect( $headers )->toContainKey( 'access-control-allow-origin' );
+            expect( $headers[ 'access-control-allow-origin' ][ 0 ] )->toEqual( $this->server );
         } );
 
     } );

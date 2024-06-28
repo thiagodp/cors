@@ -23,8 +23,6 @@ const HEADER_ORIGIN = 'Origin'; // URL
 const HEADER_CREDENTIAIS = 'Credentials'; // 'omit', 'include', 'same-origin'
 const HEADER_CONTENT_LENGTH = 'Content-Length';
 
-const NOT_ALLOWED_ORIGIN = 'null';
-
 // CORS Request Headers
 const REQUEST_HEADER__ACCESS_CONTROL_REQUEST_METHOD     = 'Access-Control-Request-Method';
 const REQUEST_HEADER__ACCESS_CONTROL_REQUEST_HEADERS    = 'Access-Control-Request-Headers';
@@ -37,6 +35,7 @@ const HEADER_ACCESS_CONTROL_ALLOW_HEADERS       = 'Access-Control-Allow-Headers'
 const HEADER_ACCESS_CONTROL_MAX_AGE             = 'Access-Control-Max-Age'; // Protocol's default is 5
 const HEADER_ACCESS_CONTROL_EXPOSE_HEADERS      = 'Access-Control-Expose-Headers';
 
+const INVALID_ORIGIN_VALUE = 'false';
 
 function isOriginOptionToReturnAnyOrigin( $value ) {
     return $value === false || $value === 'false' || $value === '*' || empty( $value );
@@ -46,8 +45,8 @@ function isOriginOptionToReflectTheOrigin( $value ) {
     return $value === true || $value === 'true';
 }
 
-function isOriginOptionToCheckOrigin( $value ) {
-    return is_string( $value ) || is_array( $value );
+function isOriginOptionASingleOrigin( $value ) {
+    return is_string( $value );
 }
 
 /**
@@ -65,44 +64,72 @@ function cors( $options = [] ) {
 
     return function ( HttpRequest &$req, HttpResponse &$res, bool &$stop ) use ( &$opt ) {
 
+        $requestMethod = $req->method();
+
         // # Origin -----------------------------------------------------------
 
         $isOriginForbidden = false;
 
         $origin = $req->header( HEADER_ORIGIN );
 
-        if ( is_null( $origin ) ) { // "Origin" header NOT received
+        if ( isOriginOptionToReturnAnyOrigin( $opt->origin ) ) {
 
-            if ( isOriginOptionToReflectTheOrigin( $opt->origin ) ||
-                isOriginOptionToReturnAnyOrigin( $opt->origin )
-            ) { // Any origin is allowed
-                $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, ANY );
-            } else { // list of allowed origins
-                $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, NOT_ALLOWED_ORIGIN );
-                $res->status( STATUS_FORBIDDEN );
-                $isOriginForbidden = true;
+            $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, ANY );
+
+        } else if ( isOriginOptionASingleOrigin( $opt->origin ) ) {
+
+            $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, $opt->origin );
+            $res->header( HEADER_VARY, HEADER_ORIGIN );
+
+        } else if ( isOriginOptionToReflectTheOrigin( $opt->origin ) ) {
+
+            if ( isset( $origin ) ) {
+                $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, $origin );
+                $res->header( HEADER_VARY, HEADER_ORIGIN );
+            } else {
+                $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, ANY ); // Permissive
             }
 
-        } else {  // "Origin" header received
+        } else { // List of origins
 
-            if ( isOriginOptionToReflectTheOrigin( $opt->origin ) || isOriginOptionToReturnAnyOrigin( $opt->origin ) ) {
+                if ( isset( $origin ) && isOriginAllowed( $origin, $opt->origin ) ) {
 
-                $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, $origin );
-                $res->header( HEADER_VARY, HEADER_ORIGIN ); // Indicates that the Origin value influences the response
-
-            } else if ( isOriginOptionToCheckOrigin( $opt->origin ) ) {
-
-                if ( isOriginAllowed( $origin, $opt->origin ) ) {
+                    // Reflect origin
                     $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, $origin );
-                    $res->header( HEADER_VARY, HEADER_ORIGIN ); // Indicates that the Origin value influences the response
+                    $res->header( HEADER_VARY, HEADER_ORIGIN );
+
                 } else {
-                    $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, NOT_ALLOWED_ORIGIN );
+                    $originToSend = is_array( $opt->origin ) ? $opt->origin[ 0 ] ?? INVALID_ORIGIN_VALUE : $opt->origin;
+                    $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, $originToSend );
                     $res->status( STATUS_FORBIDDEN );
                     $isOriginForbidden = true;
                 }
+        }
 
+        // # Methods ----------------------------------------------------------
+
+        if ( $opt->methods === ANY || empty( $opt->methods ) ) {
+
+            $preflightRequestedMethod = $req->header( REQUEST_HEADER__ACCESS_CONTROL_REQUEST_METHOD );
+
+            if ( $requestMethod === 'OPTIONS' ) {
+
+                if ( ! is_null( $preflightRequestedMethod ) ) {
+                    if ( isHttpMethodValid( $preflightRequestedMethod ) ) {
+                        $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, mb_strtoupper( $preflightRequestedMethod ) );
+                    } else {
+                        $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, METHOD_GET ); // Only 'GET' on invalid value
+                    }
+                } else {
+                    $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, DEFAULT_ALLOWED_METHODS );
+                }
             }
 
+        } else {
+            $value = is_array( $opt->methods )
+                ? implode( ',', $opt->methods )
+                : $opt->methods . '';
+            $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, $value );
         }
 
         // # Credentials ------------------------------------------------------
@@ -122,26 +149,6 @@ function cors( $options = [] ) {
             $res->header( HEADER_ACCESS_CONTROL_ALLOW_HEADERS, $value );
         }
 
-        // # Methods ----------------------------------------------------------
-
-        if ( $opt->methods === ANY || empty( $opt->methods ) ) {
-            $header = $req->header( REQUEST_HEADER__ACCESS_CONTROL_REQUEST_METHOD );
-            if ( ! empty( $header ) ) {
-                if ( isHttpMethodValid( $header ) ) {
-                    $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, mb_strtoupper( $header ) );
-                } else {
-                    $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, 'GET' ); // Only 'GET' on invalid value
-                }
-            } else {
-                $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, DEFAULT_ALLOWED_METHODS );
-            }
-        } else {
-            $value = is_array( $opt->methods )
-                ? implode( ',', $opt->methods )
-                : $opt->methods . '';
-            $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, $value );
-        }
-
         // # Exposed Headers --------------------------------------------------
 
         if ( ! empty( $opt->exposedHeaders ) && $opt->exposedHeaders != ANY ) {
@@ -159,7 +166,7 @@ function cors( $options = [] ) {
 
         // --
 
-        if ( $req->method() === METHOD_OPTIONS ) { // Preflight Request
+        if ( $requestMethod === METHOD_OPTIONS ) { // Preflight Request
 
             $res->header( HEADER_CONTENT_LENGTH, 0 );
 

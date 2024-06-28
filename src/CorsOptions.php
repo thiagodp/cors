@@ -168,7 +168,7 @@ function validateOptions( CorsOptions $co ) {
         }
     }
     // Status
-    if ( ! is_numeric( $co->optionsSuccessStatus ) 
+    if ( ! is_numeric( $co->optionsSuccessStatus )
         || $co->optionsSuccessStatus < 200
         || $co->optionsSuccessStatus > 299
     ) {
