@@ -94,9 +94,10 @@ describe( 'cors-real-server-with-origin', function() {
             $response = $this->client->request( 'OPTIONS', $this->url, [
                 'timeout' => 2
             ] );
-            $headers = $response->getHeaders( false ); // false to avoid throwing an exception when a 3xx, 4xx or 5xx code is returned !
-            expect( isset( $headers[ 'access-control-allow-origin' ] ) )->toBeTruthy();
-            expect( $headers[ 'access-control-allow-origin' ][ 0 ] )->toEqual( $this->server );
+
+            // getHeaders( false ) to avoid throwing an exception when a 3xx, 4xx or 5xx code is returned !
+            $responseOrigin = ( $response->getHeaders( false )[ 'access-control-allow-origin' ] ?? [ null ] ) [ 0 ];
+            expect( $responseOrigin )->toEqual( $this->server );
         } );
 
         it( 'should return status Forbidden the origin is not sent', function() {
@@ -117,9 +118,8 @@ describe( 'cors-real-server-with-origin', function() {
                 'timeout' => 2
             ] );
 
-            $headers = $response->getHeaders( false ); // false to avoid throwing an exception when a 3xx, 4xx or 5xx code is returned !
-            expect( $headers )->toContainKey( 'access-control-allow-origin' );
-            expect( $headers[ 'access-control-allow-origin' ][ 0 ] )->toEqual( $this->server );
+            $responseOrigin = ( $response->getHeaders( false )[ 'access-control-allow-origin' ] ?? [ null ] ) [ 0 ];
+            expect( $responseOrigin )->toEqual( $this->server );
         } );
 
     } );

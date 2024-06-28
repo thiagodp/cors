@@ -55,9 +55,20 @@ describe( 'cors-real-server-with-default-options', function() {
             ] );
 
             expect( $response->getStatusCode() )->toBe( 204 );
-            $headers = $response->getHeaders();
-            expect( $headers )->toContainKey( 'access-control-allow-origin' );
-            expect( $headers[ 'access-control-allow-origin' ][ 0 ] )->toEqual( 'http://different-domain.com' );
+        } );
+
+
+        it( 'should reflect the sent origin', function() {
+
+            $response = $this->client->request( 'OPTIONS', $this->url, [
+                'headers' => [
+                    'Origin' => 'http://different-domain.com'
+                ],
+                'timeout' => 2
+            ] );
+
+            $responseOrigin = ( $response->getHeaders( false )[ 'access-control-allow-origin' ] ?? [ '' ] ) [ 0 ];
+            expect( $responseOrigin )->toEqual( 'http://different-domain.com' );
         } );
 
 
@@ -74,33 +85,17 @@ describe( 'cors-real-server-with-default-options', function() {
         } );
 
 
-        it( 'should return the header "Access-Control-Allow-Origin" with "*" when Origin is not sent', function() {
+        it( 'should return the origin "*" when Origin is not sent', function() {
 
             $response = $this->client->request( 'OPTIONS', $this->url, [
                 'timeout' => 2
             ] );
 
-            $allowedOrigin = $response->getHeaders()[ 'access-control-allow-origin' ][ 0 ];
-            expect( $allowedOrigin )->toEqual( '*' );
+            $responseOrigin = ( $response->getHeaders( false )[ 'access-control-allow-origin' ] ?? [ '' ] ) [ 0 ];
+            expect( $responseOrigin )->toEqual( '*' );
         } );
 
-
-        it( 'should return the header "Access-Control-Allow-Origin" with the Origin when it is sent', function() {
-
-            $origin = 'http://different-domain.com';
-
-            $response = $this->client->request( 'OPTIONS', $this->url, [
-                'headers' => [
-                    'Origin' => $origin
-                ],
-                'timeout' => 2
-            ] );
-
-            $allowedOrigin = $response->getHeaders()[ 'access-control-allow-origin' ][ 0 ];
-            expect( $allowedOrigin )->toEqual( $origin );
-        } );
-
-        it( 'should return the header "Access-Control-Allow-Methods" with the value of "Access-Control-Request-Method" when defined', function() {
+        it( 'should return the method sent', function() {
 
             $response = $this->client->request( 'OPTIONS', $this->url, [
                 'headers' => [
@@ -109,9 +104,8 @@ describe( 'cors-real-server-with-default-options', function() {
                 'timeout' => 2
             ] );
 
-            $headers = $response->getHeaders();
-            expect( isset( $headers[ 'access-control-allow-methods' ] ) )->toBeTruthy();
-            // expect( $value )->toEqual( 'POST' );
+            $responseMethods = ( $response->getHeaders( false )[ 'access-control-allow-methods' ] ?? [ '' ] ) [ 0 ];
+            expect( $responseMethods )->toEqual( 'POST' );
         } );
 
     } );
