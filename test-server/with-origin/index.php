@@ -6,9 +6,10 @@ use function phputil\cors\cors;
 
 $router = new Router();
 
-$domain = require( __DIR__ .'/../domain.php' );
+$server = require( __DIR__ .'/../server.php' );
+$localServer = $server[ 'domain' ] . ':' .  $server[ 'port' ];
 
-$router->use( cors( [ 'origin' => [ $domain . ':8889', 'allowed.com' ] ] ) );
+$router->use( cors( [ 'origin' => [ $localServer, 'allowed.com' ] ] ) );
 
 $router->get( '/', function( $req ) {
     $req->send( 'Hello' );

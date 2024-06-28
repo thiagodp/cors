@@ -2,13 +2,14 @@
 
 use Symfony\Component\HttpClient\HttpClient;
 
-$domain = require( __DIR__ .'/../test-server/domain.php' );
+$server = require( __DIR__ .'/../test-server/server.php' );
+$localServer = $server[ 'domain' ] . ':80';
 
-describe( 'cors-real-server-with-default-options', function() use ( $domain) {
+describe( 'cors-real-server-with-default-options', function() use ( $localServer ) {
 
-    beforeAll( function() use ( $domain ) {
+    beforeAll( function() use ( $localServer ) {
 
-        $this->server = $domain . ':8888';
+        $this->server = $localServer;
 
         // HTTP Server
         $cmd = 'cd test-server && cd default && php -S ' . $this->server;
