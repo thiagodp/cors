@@ -6,7 +6,7 @@ describe( 'cors-real-server-with-origin', function() {
 
     beforeAll( function() {
 
-        $this->server = 'localhost:8889';
+        $this->server = '0.0.0.0:8889';
 
         // HTTP Server
         $cmd = 'cd test-server-with-origin && php -S ' . $this->server;

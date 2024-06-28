@@ -6,7 +6,7 @@ describe( 'cors-real-server-with-default-options', function() {
 
     beforeAll( function() {
 
-        $this->server = 'localhost:8888';
+        $this->server = '0.0.0.0:8888';
 
         // HTTP Server
         $cmd = 'cd test-server-default && php -S ' . $this->server;
