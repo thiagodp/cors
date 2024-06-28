@@ -1,6 +1,5 @@
 <?php
 
-use Symfony\Component\HttpClient\Exception\ClientException;
 use Symfony\Component\HttpClient\HttpClient;
 
 describe( 'cors-real-server-with-origin', function() {
@@ -24,7 +23,7 @@ describe( 'cors-real-server-with-origin', function() {
         // URL
         $this->url = 'http://' . $server;
 
-        // HTTP Client        
+        // HTTP Client
         $this->client = HttpClient::create();
 
     } );
@@ -45,9 +44,12 @@ describe( 'cors-real-server-with-origin', function() {
 
     describe( 'preflight', function() {
 
-        it( 'should return status code 204 for the same origin', function() {
+        it( 'should return status code 204 for an allowed origin', function() {
 
             $response = $this->client->request( 'OPTIONS', $this->url, [
+                'headers' => [
+                    'Origin' => 'allowed.com'
+                ],
                 'timeout' => 2
             ] );
 
@@ -55,13 +57,13 @@ describe( 'cors-real-server-with-origin', function() {
         } );
 
 
-        it( 'should return the status code 403 (Forbidden) when the origin is not allowed!', function() {
-        
+        it( 'should return the status code 403 (Forbidden) when the origin is not allowed', function() {
+
             $response = $this->client->request( 'OPTIONS', $this->url, [
                 'headers' => [
                     'Origin' => 'http://different-domain.com'
                 ],
-                'timeout' => 2                   
+                'timeout' => 2
 
             ] );
 
@@ -69,19 +71,22 @@ describe( 'cors-real-server-with-origin', function() {
 
             $headers = $response->getHeaders( false ); // false to avoid throwing an exception when a 3xx, 4xx or 5xx code is returned !
             expect( $headers )->toContainKey( 'access-control-allow-origin' );
-            expect( $headers[ 'access-control-allow-origin' ][ 0 ] )->toEqual( 'false' );            
-        } );        
+            expect( $headers[ 'access-control-allow-origin' ][ 0 ] )->toEqual( 'false' );
+        } );
 
 
-        it( 'should return the header "Access-Control-Allow-Origin" with "*" when Origin is not sent', function() {
+        it( 'should return the status code 403 (Forbidden) when the origin is not sent', function() {
 
             $response = $this->client->request( 'OPTIONS', $this->url, [
                 'timeout' => 2
             ] );
 
-            $allowedOrigin = $response->getHeaders()[ 'access-control-allow-origin' ][ 0 ];
-            expect( $allowedOrigin )->toEqual( '*' );
-        } );     
+            expect( $response->getStatusCode() )->toBe( 403 );
+
+            $headers = $response->getHeaders( false ); // false to avoid throwing an exception when a 3xx, 4xx or 5xx code is returned !
+            expect( $headers )->toContainKey( 'access-control-allow-origin' );
+            expect( $headers[ 'access-control-allow-origin' ][ 0 ] )->toEqual( 'false' );
+        } );
 
     } );
 

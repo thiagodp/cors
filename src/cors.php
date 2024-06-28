@@ -23,7 +23,7 @@ const HEADER_ORIGIN = 'Origin'; // URL
 const HEADER_CREDENTIAIS = 'Credentials'; // 'omit', 'include', 'same-origin'
 const HEADER_CONTENT_LENGTH = 'Content-Length';
 
-const NOT_ALLOWED_ORIGIN = 'false';
+const NOT_ALLOWED_ORIGIN = 'null';
 
 // CORS Request Headers
 const REQUEST_HEADER__ACCESS_CONTROL_REQUEST_METHOD     = 'Access-Control-Request-Method';
@@ -37,6 +37,18 @@ const HEADER_ACCESS_CONTROL_ALLOW_HEADERS       = 'Access-Control-Allow-Headers'
 const HEADER_ACCESS_CONTROL_MAX_AGE             = 'Access-Control-Max-Age'; // Protocol's default is 5
 const HEADER_ACCESS_CONTROL_EXPOSE_HEADERS      = 'Access-Control-Expose-Headers';
 
+
+function isOriginOptionToReturnAnyOrigin( $value ) {
+    return $value === false || $value === 'false' || $value === '*' || empty( $value );
+}
+
+function isOriginOptionToReflectTheOrigin( $value ) {
+    return $value === true || $value === 'true';
+}
+
+function isOriginOptionToCheckOrigin( $value ) {
+    return is_string( $value ) || is_array( $value );
+}
 
 /**
  * CORS middleware.
@@ -58,31 +70,39 @@ function cors( $options = [] ) {
         $isOriginForbidden = false;
 
         $origin = $req->header( HEADER_ORIGIN );
-        if ( is_null( $origin ) || $opt->origin === false ) {
-            $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, ANY );
 
-        } else {
+        if ( is_null( $origin ) ) { // "Origin" header NOT received
 
-            $canIncludeRequestOrigin = $opt->origin === true ||
-                $opt->origin === ANY ||
-                (
-                    ( is_array( $opt->origin ) || is_string( $opt->origin ) )
-                    && isOriginAllowed( $origin, $opt->origin )
-                );
-
-            // die( ( $canIncludeRequestOrigin ? 'S' : 'N' ) . ' O:' . $origin );
-
-            if ( $canIncludeRequestOrigin ) {
-                // Sets the Origin as allowed
-                $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, $origin );
-
-                // Indicates that the Origin value influences the response
-                $res->header( HEADER_VARY, HEADER_ORIGIN );
-            } else {
+            if ( isOriginOptionToReflectTheOrigin( $opt->origin ) ||
+                isOriginOptionToReturnAnyOrigin( $opt->origin )
+            ) { // Any origin is allowed
+                $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, ANY );
+            } else { // list of allowed origins
                 $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, NOT_ALLOWED_ORIGIN );
                 $res->status( STATUS_FORBIDDEN );
                 $isOriginForbidden = true;
             }
+
+        } else {  // "Origin" header received
+
+            if ( isOriginOptionToReflectTheOrigin( $opt->origin ) || isOriginOptionToReturnAnyOrigin( $opt->origin ) ) {
+
+                $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, $origin );
+                $res->header( HEADER_VARY, HEADER_ORIGIN ); // Indicates that the Origin value influences the response
+
+            } else if ( isOriginOptionToCheckOrigin( $opt->origin ) ) {
+
+                if ( isOriginAllowed( $origin, $opt->origin ) ) {
+                    $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, $origin );
+                    $res->header( HEADER_VARY, HEADER_ORIGIN ); // Indicates that the Origin value influences the response
+                } else {
+                    $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, NOT_ALLOWED_ORIGIN );
+                    $res->status( STATUS_FORBIDDEN );
+                    $isOriginForbidden = true;
+                }
+
+            }
+
         }
 
         // # Credentials ------------------------------------------------------
@@ -105,7 +125,7 @@ function cors( $options = [] ) {
         // # Methods ----------------------------------------------------------
 
         if ( $opt->methods === ANY || empty( $opt->methods ) ) {
-            $header = $req->header( REQUEST_HEADER__ACCESS_CONTROL_REQUEST_METHOD );            
+            $header = $req->header( REQUEST_HEADER__ACCESS_CONTROL_REQUEST_METHOD );
             if ( ! empty( $header ) ) {
                 if ( isHttpMethodValid( $header ) ) {
                     $res->header( HEADER_ACCESS_CONTROL_ALLOW_METHODS, mb_strtoupper( $header ) );
@@ -145,11 +165,11 @@ function cors( $options = [] ) {
 
             if ( ! $isOriginForbidden ) {
 
-                $res->status( STATUS_NO_CONTENT ); 
+                $res->status( STATUS_NO_CONTENT );
 
-                // # Options' success status --------------------------------------                
+                // # Options' success status --------------------------------------
                 if ( ! empty( $opt->optionsSuccessStatus ) && $opt->optionsSuccessStatus != 204 ) {
-                    $res->status( $opt->optionsSuccessStatus );    
+                    $res->status( $opt->optionsSuccessStatus );
                 }
             }
 
