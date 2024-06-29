@@ -4,16 +4,17 @@ use Symfony\Component\HttpClient\HttpClient;
 
 describe( 'cors-real-server-with-origin', function() {
 
-    beforeAll( function() {
+    $rootDir = dirname( __DIR__, 2 );
+    $server = require( $rootDir . '/test-server/server.php' );
+    $localServer = $server[ 'domain' ] . ':' . $server[ 'port' ];
 
-        $server = require( __DIR__ .'/../test-server/server.php' );
-        $localServer = $server[ 'domain' ] . ':' . $server[ 'port' ];
+    $this->server = $localServer;
+    $this->process = null;
 
-        $this->server = $localServer;
+    beforeAll( function() use ( $rootDir ) {
 
         // HTTP Server
-        $upperDir = dirname( __DIR__ );
-        $cmd = "cd $upperDir && " . 'cd test-server && cd with-origin && php -S ' . $this->server;
+        $cmd = "cd $rootDir && " . 'cd test-server && cd with-origin && php -S ' . $this->server;
         $spec = [
             [ 'pipe', 'r' ], // stdin
             [ 'pipe', 'w' ], // stdout

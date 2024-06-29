@@ -4,13 +4,12 @@
     "type": "library",
     "license": "MIT",
     "scripts": {
-        "test": "kahlan --cc",
-        "test2": "kahlan --cc --reporter=verbose",
+        "test": "kahlan --cc=1",
+        "test2": "kahlan --reporter=verbose",
         "cov": "kahlan --coverage",
         "check": "phpstan analyze src"
     },
     "require": {
-        "ext-mbstring": "*"
     },
     "require-dev": {
         "kahlan/kahlan": "^5.2",
