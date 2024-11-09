@@ -12,5 +12,9 @@ $router->get( '/', function( $req ) {
     $req->send( 'Hello' );
 } );
 
+$router->put( '/example', function( $req ) {
+    $req->send( 'OK' );
+} );
+
 $router->listen();
 ?>

@@ -110,6 +110,18 @@ describe( 'cors-real-server-with-default-options', function() {
 
     } );
 
+    it( 'PUT should answer correctly', function() {
+
+        $response = $this->client->request( 'PUT', $this->url . '/example', [
+            'headers' => [
+                'Origin' => 'http://different-domain.com'
+            ],
+            'timeout' => 2
+        ] );
+
+        expect( $response->getStatusCode() )->toBe( 200 );
+    } );
+
 } );
 
 ?>
