@@ -9,8 +9,12 @@
         "cov": "kahlan --coverage",
         "check": "phpstan analyze src"
     },
-    "require": {
+    "config": {
+        "platform": {
+            "php": "7.4.0"
+        }
     },
+    "require": {},
     "require-dev": {
         "kahlan/kahlan": "^5.2",
         "phputil/router": "^0.3.0",
@@ -21,6 +25,8 @@
         "psr-4": {
             "phputil\\cors\\": "src/"
         },
-        "files": [ "src/cors.php" ]
+        "files": [
+            "src/cors.php"
+        ]
     }
 }
