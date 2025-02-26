@@ -118,7 +118,7 @@ Accepting credentials (e.g. cookies) and cross-site requests from authorized dom
 $options = [
     'origin'            => [ 'https://my-app.com', 'https://authorized-domain.com' ], // Replace with your trusted domains
     'credentials'       => true,
-    'allowedHeaders'    => [ 'Host', 'Origin', 'Accept', 'Content-Type', 'Content-Length', 'Cookie' ],
+    'allowedHeaders'    => [ 'Accept', 'Authorization', 'Cookie', 'Content-Length', 'Content-Type', 'Host', 'Origin', 'Referer' ],
     'exposeHeaders'     => [ 'Content-Type', 'Content-Length', 'Set-Cookie' ],
     'maxAge'            => 3600 // Cache Preflight requests for 1 hour
 ];
