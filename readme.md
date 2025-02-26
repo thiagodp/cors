@@ -110,6 +110,18 @@ $options = ( new CorsOptions() )
 $app->use( cors( $options ) );
 ```
 
+## Additional examples
+
+Accepting credentials (e.g. cookies) and cross-site requests from authorized domains:
+
+```php
+$options = [
+    'origin'         => [ 'https://my-app.com', 'https://authorized-domain.com' ],
+    'allowedHeaders' => [ 'Host', 'Origin', 'Accept', 'Content-Type', 'Content-Length', 'Cookie' ],
+    'exposeHeaders'  => [ 'Content-Type', 'Content-Length', 'Set-Cookie' ],
+    'maxAge'         => 3600 // Cache Preflight requests for 1 hour
+];
+```
 
 ## License
 

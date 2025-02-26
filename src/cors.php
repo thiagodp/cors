@@ -1,7 +1,6 @@
 <?php
 namespace phputil\cors;
 
-use DateTime;
 use phputil\router\HttpRequest;
 use phputil\router\HttpResponse;
 
@@ -10,7 +9,6 @@ require_once __DIR__ . '/http.php';
 
 use function implode;
 use function is_array;
-use function is_object;
 use function is_null;
 use function is_numeric;
 use function is_string;
