@@ -116,11 +116,14 @@ Accepting credentials (e.g. cookies) and cross-site requests from authorized dom
 
 ```php
 $options = [
-    'origin'         => [ 'https://my-app.com', 'https://authorized-domain.com' ],
-    'allowedHeaders' => [ 'Host', 'Origin', 'Accept', 'Content-Type', 'Content-Length', 'Cookie' ],
-    'exposeHeaders'  => [ 'Content-Type', 'Content-Length', 'Set-Cookie' ],
-    'maxAge'         => 3600 // Cache Preflight requests for 1 hour
+    'origin'            => [ 'https://my-app.com', 'https://authorized-domain.com' ], // Replace with your trusted domains
+    'credentials'       => true,
+    'allowedHeaders'    => [ 'Host', 'Origin', 'Accept', 'Content-Type', 'Content-Length', 'Cookie' ],
+    'exposeHeaders'     => [ 'Content-Type', 'Content-Length', 'Set-Cookie' ],
+    'maxAge'            => 3600 // Cache Preflight requests for 1 hour
 ];
+
+$app->use( cors( $options ) );
 ```
 
 ## License
