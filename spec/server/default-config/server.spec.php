@@ -5,14 +5,13 @@ use Symfony\Component\HttpClient\HttpClient;
 
 describe( 'server with default config', function() {
 
-    $config = [ 'domain' => 'localhost', 'port' => '9997' ];
-
-    $rootDir = dirname( __FILE__ );
-    $this->server = $config[ 'domain' ] . ':' . $config[ 'port' ];
+    $this->server = 'localhost:9997';
     $this->url = 'http://' . $this->server;
     $this->process = null;
 
-    beforeAll( function() use ( $rootDir ) {
+    beforeAll( function() {
+
+        $rootDir = dirname( __FILE__ );
 
         // HTTP Server
         $cmd = "cd $rootDir && php -S {$this->server}";

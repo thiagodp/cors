@@ -7,10 +7,10 @@ use function phputil\cors\cors;
 $router = new Router();
 
 $config = require_once( __DIR__ . '/config.php' );
-$localServer = $config[ 'domain' ] . ':' .  $config[ 'port' ];
+$localhost = $config[ 'localhost' ];
 $allowed = $config[ 'allowed' ];
 
-$options = [ 'origin' => [ $localServer, $allowed ] ];
+$options = [ 'origin' => [ $localhost, $allowed ] ];
 
 $router->use( cors( $options ) );
 

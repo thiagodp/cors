@@ -7,12 +7,16 @@
         "test": "kahlan --cc=1",
         "test2": "kahlan --reporter=verbose",
         "cov": "kahlan --coverage",
-        "check": "phpstan analyze src"
+        "check": "phpstan analyze src",
+        "dep": "composer depends php"
     },
     "config": {
         "platform": {
             "php": "7.4.0"
         }
+    },
+    "require": {
+        "php": ">=7.4"
     },
     "require-dev": {
         "kahlan/kahlan": "^5.2",

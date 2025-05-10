@@ -1,6 +1,8 @@
-[![Version](https://poser.pugx.org/phputil/cors/v?style=flat-square)](https://packagist.org/packages/phputil/cors)
-![Build](https://github.com/thiagodp/cors/actions/workflows/ci.yml/badge.svg?style=flat)
-[![License](https://poser.pugx.org/phputil/cors/license?style=flat-square)](https://packagist.org/packages/phputil/cors)
+![Packagist Version](https://img.shields.io/packagist/v/phputil/cors?style=for-the-badge&color=green)
+![GitHub License](https://img.shields.io/github/license/thiagodp/cors?style=for-the-badge&color=green)
+![Packagist Downloads](https://img.shields.io/packagist/dt/phputil/cors?style=for-the-badge&color=green)
+![Build](https://github.com/thiagodp/cors/actions/workflows/ci.yml/badge.svg?style=for-the-badge&color=green)
+
 
 # phputil/cors
 
@@ -18,14 +20,19 @@
 composer require phputil/cors
 ```
 
-## Usage
+_Is it useful for you? Consider giving it a Star ⭐_
+
+## Examples
 
 ### Basic usage
+
+> Enable _all_ CORS requests
 
 ```php
 require_once 'vendor/autoload.php';
 use phputil\router\Router;
-use function phputil\cors\cors; // Step 1: Declare the namespace usage for the function.
+use function phputil\cors\cors; // Step 1: Declare the usage.
+
 $app = new Router();
 
 $app->use( cors() ); // Step 2: Invoke the function to use it as a middleware.
@@ -33,7 +40,26 @@ $app->use( cors() ); // Step 2: Invoke the function to use it as a middleware.
 $app->get( '/', function( $req, $res ) {
     $res->send( 'Hello' );
 } );
+
 $app->listen();
+```
+
+### Accepting credentiais and authorized domains
+
+> Accepting credentials (e.g. cookies) and cross-site requests from authorized domains:
+
+```php
+// ...
+$options = [
+    'origin'            => [ 'https://my-app.com', 'https://authorized-domain.com' ],
+    'credentials'       => true,
+    'allowedHeaders'    => [ 'Accept', 'Authorization', 'Cookie', 'Content-Length', 'Content-Type', 'Host', 'Origin', 'Referer' ],
+    'exposeHeaders'     => [ 'Content-Length', 'Content-Type', 'Set-Cookie' ],
+    'maxAge'            => 3600 // Cache Preflight requests for 1 hour
+];
+
+$app->use( cors( $options ) );
+// ...
 ```
 
 ## API
@@ -41,7 +67,32 @@ $app->listen();
 ```php
 function cors( array|CorOptions $options ): callable;
 ```
-`$options` can be an **array** or an **object** from the class `CorOptions`. All its keys/attributes are **optional**:
+`$options` can be an **array** or an **object** from the class `CorOptions`.
+
+Example with an array:
+
+```php
+$options = [
+    'origin' => 'mydomain.com',
+    'methods' => 'GET,POST'
+];
+
+$app->use( cors( $options ) );
+```
+
+Example that uses `CorOptions`, a class with chainable methods:
+
+```php
+use phputil\cors\CorsOptions; // Needed
+
+$options = ( new CorsOptions() )
+    ->withOrigin( 'mydomain.com' )
+    ->withMethods( 'GET,POST' );
+
+$app->use( cors( $options ) );
+```
+
+All `$options`' keys/attributes are **optional**:
 
 ### `origin: bool|string|string[]`
 - Configures the response header [`Access-Control-Allow-Origin`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin), which indicates the allowed origin.
@@ -84,47 +135,6 @@ Note: The status code returned for an origin that is not in the allowed list is 
 - The **default value** is `null`, meaning to not include the header.
 - An `int` value means the number of seconds that a preflight request can be cached (by the browser).
 
-
-## Example
-
-Using an array:
-
-```php
-$options = [
-    'origin' => 'mydomain.com',
-    'methods' => 'GET,POST'
-];
-
-$app->use( cors( $options ) );
-```
-
-Using the class `CorOptions`, that has nestable builder methods with the prefix `with`:
-
-```php
-use phputil\cors\CorsOptions; // Needed
-
-$options = ( new CorsOptions() )
-    ->withOrigin( 'mydomain.com' )
-    ->withMethods( 'GET,POST' );
-
-$app->use( cors( $options ) );
-```
-
-## Additional examples
-
-Accepting credentials (e.g. cookies) and cross-site requests from authorized domains:
-
-```php
-$options = [
-    'origin'            => [ 'https://my-app.com', 'https://authorized-domain.com' ], // Replace with your trusted domains
-    'credentials'       => true,
-    'allowedHeaders'    => [ 'Accept', 'Authorization', 'Cookie', 'Content-Length', 'Content-Type', 'Host', 'Origin', 'Referer' ],
-    'exposeHeaders'     => [ 'Content-Length', 'Content-Type', 'Set-Cookie' ],
-    'maxAge'            => 3600 // Cache Preflight requests for 1 hour
-];
-
-$app->use( cors( $options ) );
-```
 
 ## License
 

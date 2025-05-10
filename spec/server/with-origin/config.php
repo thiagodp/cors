@@ -1,2 +1,6 @@
 <?php
-return [ 'domain' => 'localhost', 'port' => '9998', 'allowed' => 'allowed.com' ];
+return [
+    'domain'    => 'localhost:9998',
+    'localhost' => 'http://localhost:9998',
+    'allowed'   => 'http://allowed.com',
+];

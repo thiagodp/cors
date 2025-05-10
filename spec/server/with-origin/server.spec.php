@@ -5,16 +5,18 @@ use Symfony\Component\HttpClient\HttpClient;
 
 const NOT_ALLOWED_ORIGIN = 'http://different-domain.com';
 
-describe( 'server with origin', function() {
+$config = require_once( __DIR__ . '/config.php' );
 
-    $config = require_once( __DIR__ . '/config.php' );
+describe( 'server with origin', function() use ( $config ) {
+
+    $this->server = $config[ 'domain' ];
+    $this->url = $config[ 'localhost' ];
     $this->allowed = $config[ 'allowed' ];
-
-    $rootDir = dirname( __FILE__ );
-    $this->server = $config[ 'domain' ] . ':' . $config[ 'port' ];
     $this->process = null;
 
-    beforeAll( function() use ( $rootDir ) {
+    beforeAll( function() {
+
+        $rootDir = dirname( __FILE__ );
 
         // HTTP Server
         $cmd = "cd $rootDir && php -S {$this->server}";
@@ -29,9 +31,6 @@ describe( 'server with origin', function() {
         if ( $this->process === false ) {
             throw new Exception( 'Cannot run the HTTP server.' );
         }
-
-        // URL
-        $this->url = 'http://' . $this->server;
 
         // HTTP Client
         $this->client = HttpClient::create();
@@ -103,7 +102,7 @@ describe( 'server with origin', function() {
 
             // getHeaders( false ) to avoid throwing an exception when a 3xx, 4xx or 5xx code is returned !
             $responseOrigin = ( $response->getHeaders( false )[ 'access-control-allow-origin' ] ?? [ null ] ) [ 0 ];
-            expect( $responseOrigin )->toEqual( $this->server );
+            expect( $responseOrigin )->toEqual( $this->url );
         } );
 
         it( 'should return status Forbidden the origin is not sent', function() {
@@ -125,7 +124,7 @@ describe( 'server with origin', function() {
             ] );
 
             $responseOrigin = ( $response->getHeaders( false )[ 'access-control-allow-origin' ] ?? [ null ] ) [ 0 ];
-            expect( $responseOrigin )->toEqual( $this->server );
+            expect( $responseOrigin )->toEqual( $this->url );
         } );
 
     } );
@@ -147,5 +146,3 @@ describe( 'server with origin', function() {
     } );
 
 } );
-
-?>
