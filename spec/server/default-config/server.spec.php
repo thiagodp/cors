@@ -1,19 +1,23 @@
 <?php
+require_once __DIR__ . '/../../../vendor/autoload.php';
 
 use Symfony\Component\HttpClient\HttpClient;
 
-describe( 'cors-real-server-with-default-options', function() {
+describe( 'server with default config', function() {
 
-    $rootDir = dirname( __DIR__, 2 );
-    $server = require( $rootDir . '/test-server/server.php' );
-    $localServer = $server[ 'domain' ] . ':80';
+    $config = [ 'domain' => 'localhost', 'port' => '9997' ];
 
-    $this->server = $localServer;
+    $rootDir = dirname( __FILE__ );
+    $this->server = $config[ 'domain' ] . ':' . $config[ 'port' ];
+    $this->url = 'http://' . $this->server;
     $this->process = null;
 
     beforeAll( function() use ( $rootDir ) {
 
-        $cmd = "cd $rootDir && " . 'cd test-server && cd default && php -S ' . $this->server;
+        // HTTP Server
+        $cmd = "cd $rootDir && php -S {$this->server}";
+        echo 'Running server: ' . $cmd, PHP_EOL;
+
         $spec = [
             [ 'pipe', 'r' ], // stdin
             [ 'pipe', 'w' ], // stdout
@@ -21,24 +25,23 @@ describe( 'cors-real-server-with-default-options', function() {
         ];
         $this->process = @proc_open( $cmd, $spec, $exitPipes );
         if ( $this->process === false ) {
-            throw new Exception( 'Should be able to run the HTTP server.' );
+            throw new Exception( 'Cannot run the HTTP server.' );
         }
 
         // HTTP Client
-        $this->url = 'http://' . $this->server;
         $this->client = HttpClient::create();
     } );
 
 
     afterAll( function() {
-        $this->cliente = null;
+        $this->client = null;
 
         if ( $this->process === false ) {
             return;
         }
         $exitCode = proc_terminate( $this->process ) ? 0 : -1;
         if ( $exitCode < 0 ) {
-            throw new Exception( 'Should be able to close the HTTP server.' );
+            throw new Exception( 'Cannot close the HTTP server.' );
         }
     } );
 
@@ -58,7 +61,7 @@ describe( 'cors-real-server-with-default-options', function() {
         } );
 
 
-        it( 'should reflect the sent origin', function() {
+        it( 'should reflect the origin that was sent', function() {
 
             $response = $this->client->request( 'OPTIONS', $this->url, [
                 'headers' => [
@@ -95,7 +98,7 @@ describe( 'cors-real-server-with-default-options', function() {
             expect( $responseOrigin )->toEqual( '*' );
         } );
 
-        it( 'should return the method sent', function() {
+        it( 'should return the method that was sent', function() {
 
             $response = $this->client->request( 'OPTIONS', $this->url, [
                 'headers' => [
@@ -110,7 +113,7 @@ describe( 'cors-real-server-with-default-options', function() {
 
     } );
 
-    it( 'PUT should answer correctly', function() {
+    it( 'should answer a PUT request correctly', function() {
 
         $response = $this->client->request( 'PUT', $this->url . '/example', [
             'headers' => [

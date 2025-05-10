@@ -13,6 +13,12 @@ use function is_null;
 use function is_numeric;
 use function is_string;
 
+// // Used just for logging cors()'s options:
+// use function date_format;
+// use function json_encode;
+// use DateTime;
+// use DateTimeZone;
+
 /**
  * @see Lastest CORS standard at https://fetch.spec.whatwg.org/#cors-protocol
  */
@@ -48,6 +54,13 @@ function isOriginOptionASingleOrigin( $value ) {
     return is_string( $value );
 }
 
+// function logOptions( CorsOptions $opt, $filepath, $timezone ) {
+//     $timezone = new DateTimeZone( $timezone );
+//     $now = date_format( new DateTime('now', $timezone, 'd M Y H:i:s' ) );
+//     $logContent = $now . ' - ' . json_encode( $opt ) . "\n";
+//     @file_put_contents( $filepath, $logContent, FILE_APPEND );
+// }
+
 /**
  * CORS middleware.
  *
@@ -56,13 +69,13 @@ function isOriginOptionASingleOrigin( $value ) {
  */
 function cors( $options = [] ) {
 
-    // if ( isset( $options[ 'log' ] ) ) {
-    //     @file_put_contents( $options[ 'log' ], date_format( new DateTime(), 'd M Y H:i:s' ) . ' - ' . json_encode( $options ) . "\n", FILE_APPEND );
-    // }
-
     $opt = is_array( $options )
         ? ( new CorsOptions() )->fromArray( $options )
         : ( ( $options instanceof CorsOptions ) ? $options : new CorsOptions() );
+
+    // if ( isset( $options[ 'log' ] ) ) {
+    //     logOptions( $opt, $options[ 'log' ], $options[ 'timezone' ] ?? 'America/Sao_Paulo' );
+    // }
 
     return function ( HttpRequest &$req, HttpResponse &$res, bool &$stop ) use ( &$opt ) {
 
@@ -74,7 +87,7 @@ function cors( $options = [] ) {
             $res->header( HEADER_CONTENT_LENGTH, 0 );
 
             // # Options' success status --------------------------------------
-            if ( ! empty( $opt->optionsSuccessStatus ) && $opt->optionsSuccessStatus != 204 ) {
+            if ( is_numeric( $opt->optionsSuccessStatus ) && $opt->optionsSuccessStatus != STATUS_NO_CONTENT ) {
                 $res->status( $opt->optionsSuccessStatus );
             }
         }
@@ -103,21 +116,21 @@ function cors( $options = [] ) {
 
         } else { // List of origins
 
-                if ( isOriginAllowed( $requestOrigin, $opt->origin ) ) {
+            if ( isOriginAllowed( $requestOrigin, $opt->origin ) ) {
 
-                    // Reflect origin
-                    $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, $requestOrigin );
-                    $res->header( HEADER_VARY, HEADER_ORIGIN );
+                // Reflect origin
+                $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, $requestOrigin );
+                $res->header( HEADER_VARY, HEADER_ORIGIN );
 
-                } else {
+            } else {
 
-                    $firstOrigin = is_array( $opt->origin ) ? ( $opt->origin[ 0 ] ?? INVALID_ORIGIN_VALUE ) : $opt->origin;
-                    $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, $firstOrigin );
+                $firstOrigin = is_array( $opt->origin ) ? ( $opt->origin[ 0 ] ?? INVALID_ORIGIN_VALUE ) : $opt->origin;
+                $res->header( HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, $firstOrigin );
 
-                    if ( $requestMethod === METHOD_OPTIONS ) {
-                        $res->status( STATUS_FORBIDDEN );
-                    }
+                if ( $requestMethod === METHOD_OPTIONS ) {
+                    $res->status( STATUS_FORBIDDEN );
                 }
+            }
         }
 
         // # Methods ----------------------------------------------------------

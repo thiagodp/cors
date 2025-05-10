@@ -1,20 +1,25 @@
 <?php
+require_once __DIR__ . '/../../../vendor/autoload.php';
 
 use Symfony\Component\HttpClient\HttpClient;
 
-describe( 'cors-real-server-with-origin', function() {
+const NOT_ALLOWED_ORIGIN = 'http://different-domain.com';
 
-    $rootDir = dirname( __DIR__, 2 );
-    $server = require( $rootDir . '/test-server/server.php' );
-    $localServer = $server[ 'domain' ] . ':' . $server[ 'port' ];
+describe( 'server with origin', function() {
 
-    $this->server = $localServer;
+    $config = require_once( __DIR__ . '/config.php' );
+    $this->allowed = $config[ 'allowed' ];
+
+    $rootDir = dirname( __FILE__ );
+    $this->server = $config[ 'domain' ] . ':' . $config[ 'port' ];
     $this->process = null;
 
     beforeAll( function() use ( $rootDir ) {
 
         // HTTP Server
-        $cmd = "cd $rootDir && " . 'cd test-server && cd with-origin && php -S ' . $this->server;
+        $cmd = "cd $rootDir && php -S {$this->server}";
+        echo 'Running server: ' . $cmd, PHP_EOL;
+
         $spec = [
             [ 'pipe', 'r' ], // stdin
             [ 'pipe', 'w' ], // stdout
@@ -22,7 +27,7 @@ describe( 'cors-real-server-with-origin', function() {
         ];
         $this->process = @proc_open( $cmd, $spec, $exitPipes );
         if ( $this->process === false ) {
-            throw new Exception( 'Should be able to run the HTTP server.' );
+            throw new Exception( 'Cannot run the HTTP server.' );
         }
 
         // URL
@@ -34,14 +39,14 @@ describe( 'cors-real-server-with-origin', function() {
 
 
     afterAll( function() {
-        $this->cliente = null;
+        $this->client = null;
 
         if ( $this->process === false ) {
             return;
         }
         $exitCode = proc_terminate( $this->process ) ? 0 : -1;
         if ( $exitCode < 0 ) {
-            throw new Exception( 'Should be able to close the HTTP server.' );
+            throw new Exception( 'Cannot close the HTTP server.' );
         }
     } );
 
@@ -52,7 +57,7 @@ describe( 'cors-real-server-with-origin', function() {
 
             $response = $this->client->request( 'OPTIONS', $this->url, [
                 'headers' => [
-                    'Origin' => 'allowed.com'
+                    'Origin' => $this->allowed
                 ],
                 'timeout' => 2
             ] );
@@ -65,7 +70,7 @@ describe( 'cors-real-server-with-origin', function() {
 
             $response = $this->client->request( 'OPTIONS', $this->url, [
                 'headers' => [
-                    'Origin' => 'http://different-domain.com'
+                    'Origin' => NOT_ALLOWED_ORIGIN
                 ],
                 'timeout' => 2
             ] );
@@ -80,7 +85,7 @@ describe( 'cors-real-server-with-origin', function() {
 
             $response = $this->client->request( 'OPTIONS', $this->url, [
                 'headers' => [
-                    'Origin' => 'http://different-domain.com'
+                    'Origin' => NOT_ALLOWED_ORIGIN
                 ],
                 'timeout' => 2
 
@@ -114,7 +119,7 @@ describe( 'cors-real-server-with-origin', function() {
 
             $response = $this->client->request( 'OPTIONS', $this->url, [
                 'headers' => [
-                    'Origin' => 'http://different-domain.com'
+                    'Origin' => NOT_ALLOWED_ORIGIN
                 ],
                 'timeout' => 2
             ] );
@@ -126,16 +131,19 @@ describe( 'cors-real-server-with-origin', function() {
     } );
 
 
-    it( 'PUT should answer correctly', function() {
+    it( 'should answer a PUT correctly', function() {
 
         $response = $this->client->request( 'PUT', $this->url . '/example', [
             'headers' => [
-                'Origin' => 'http://different-domain.com'
+                'Origin' => $this->allowed
             ],
             'timeout' => 2
         ] );
 
         expect( $response->getStatusCode() )->toBe( 200 );
+
+        $responseOrigin = ( $response->getHeaders( false )[ 'access-control-allow-origin' ] ?? [ null ] ) [ 0 ];
+        expect( $responseOrigin )->toEqual( $this->allowed );
     } );
 
 } );

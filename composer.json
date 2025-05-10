@@ -14,10 +14,9 @@
             "php": "7.4.0"
         }
     },
-    "require": {},
     "require-dev": {
         "kahlan/kahlan": "^5.2",
-        "phputil/router": "^0.3.0",
+        "phputil/router": "^0.3.3",
         "phpstan/phpstan": "^1.9",
         "symfony/http-client": "^5.4"
     },
