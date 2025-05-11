@@ -10,19 +10,15 @@
         "check": "phpstan analyze src",
         "dep": "composer depends php"
     },
-    "config": {
-        "platform": {
-            "php": "7.4.0"
-        }
-    },
     "require": {
         "php": ">=7.4"
     },
     "require-dev": {
+        "php": ">=8.2",
         "kahlan/kahlan": "^5.2",
         "phputil/router": "^0.3.3",
         "phpstan/phpstan": "^1.9",
-        "symfony/http-client": "^5.4"
+        "symfony/http-client": "^7"
     },
     "autoload": {
         "psr-4": {
