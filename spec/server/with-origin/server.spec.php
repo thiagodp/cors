@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../../vendor/autoload.php';
 
+use Symfony\Component\HttpClient\CurlHttpClient;
 use Symfony\Component\HttpClient\HttpClient;
 
 const NOT_ALLOWED_ORIGIN = 'http://different-domain.com';
@@ -33,7 +34,7 @@ describe( 'server with origin', function() use ( $config ) {
         }
 
         // HTTP Client
-        $this->client = HttpClient::create();
+        $this->client = new CurlHttpClient(); // HttpClient::create();
     } );
 
 
