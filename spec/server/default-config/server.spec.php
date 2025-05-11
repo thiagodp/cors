@@ -5,7 +5,10 @@ use Symfony\Component\HttpClient\HttpClient;
 
 describe( 'server with default config', function() {
 
-    $this->server = 'localhost:9997';
+    $port = '9997';
+    $host = PHP_OS_FAMILY === 'Windows' ? 'localhost' : '0.0.0.0';
+
+    $this->server = "$host:$port";
     $this->url = 'http://' . $this->server;
     $this->process = null;
 
