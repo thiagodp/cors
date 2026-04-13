@@ -1,6 +1,7 @@
 <?php
+require_once __DIR__ . '/../shared.php';
+
 $port = '9998';
-$host = PHP_OS_FAMILY === 'Windows' ? 'localhost' : '0.0.0.0';
 
 return [
     'domain'    => "$host:$port",

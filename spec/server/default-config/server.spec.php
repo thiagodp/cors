@@ -1,18 +1,14 @@
 <?php
 require_once __DIR__ . '/../../../vendor/autoload.php';
+require_once __DIR__ . '/../shared.php';
 
 use Symfony\Component\HttpClient\CurlHttpClient;
 use Symfony\Component\HttpClient\HttpClient;
 
-if ( ! defined('NOT_ALLOWED_ORIGIN') ) {
-    define( 'NOT_ALLOWED_ORIGIN', 'http://different-domain.com' );
-}
 
-describe( 'server with default config', function() {
-
+describe( 'server with default config', function() use ( $host ) {
 
     $port = '9996';
-    $host = PHP_OS_FAMILY === 'Windows' ? 'localhost' : '0.0.0.0';
 
     $this->server = "$host:$port";
     $this->url = 'http://' . $this->server;

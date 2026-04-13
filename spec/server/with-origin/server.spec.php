@@ -4,8 +4,6 @@ require_once __DIR__ . '/../../../vendor/autoload.php';
 use Symfony\Component\HttpClient\CurlHttpClient;
 use Symfony\Component\HttpClient\HttpClient;
 
-const NOT_ALLOWED_ORIGIN = 'http://different-domain.com';
-
 $config = require_once( __DIR__ . '/config.php' );
 
 describe( 'server with origin', function() use ( $config ) {
