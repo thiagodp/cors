@@ -1,11 +1,17 @@
 <?php
 require_once __DIR__ . '/../../../vendor/autoload.php';
 
+use Symfony\Component\HttpClient\CurlHttpClient;
 use Symfony\Component\HttpClient\HttpClient;
+
+if ( ! defined('NOT_ALLOWED_ORIGIN') ) {
+    define( 'NOT_ALLOWED_ORIGIN', 'http://different-domain.com' );
+}
 
 describe( 'server with default config', function() {
 
-    $port = '9997';
+
+    $port = '9996';
     $host = PHP_OS_FAMILY === 'Windows' ? 'localhost' : '0.0.0.0';
 
     $this->server = "$host:$port";
@@ -18,7 +24,7 @@ describe( 'server with default config', function() {
 
         // HTTP Server
         $cmd = "cd $rootDir && php -S {$this->server}";
-        echo 'Running server: ' . $cmd, PHP_EOL;
+        echo 'Running server with default config: ' . $cmd, PHP_EOL;
 
         $spec = [
             [ 'pipe', 'r' ], // stdin
@@ -31,7 +37,7 @@ describe( 'server with default config', function() {
         }
 
         // HTTP Client
-        $this->client = HttpClient::create();
+        $this->client = extension_loaded( 'curl' ) ? new CurlHttpClient() : HttpClient::create();
     } );
 
 
@@ -54,7 +60,7 @@ describe( 'server with default config', function() {
 
             $response = $this->client->request( 'OPTIONS', $this->url, [
                 'headers' => [
-                    'Origin' => 'http://different-domain.com'
+                    'Origin' => NOT_ALLOWED_ORIGIN
                 ],
                 'timeout' => 2
             ] );
@@ -67,13 +73,13 @@ describe( 'server with default config', function() {
 
             $response = $this->client->request( 'OPTIONS', $this->url, [
                 'headers' => [
-                    'Origin' => 'http://different-domain.com'
+                    'Origin' => NOT_ALLOWED_ORIGIN
                 ],
                 'timeout' => 2
             ] );
 
             $responseOrigin = ( $response->getHeaders( false )[ 'access-control-allow-origin' ] ?? [ '' ] ) [ 0 ];
-            expect( $responseOrigin )->toEqual( 'http://different-domain.com' );
+            expect( $responseOrigin )->toEqual( NOT_ALLOWED_ORIGIN );
         } );
 
 
@@ -81,7 +87,7 @@ describe( 'server with default config', function() {
 
             $response = $this->client->request( 'OPTIONS', $this->url, [
                 'headers' => [
-                    'Origin' => 'http://different-domain.com'
+                    'Origin' => NOT_ALLOWED_ORIGIN
                 ],
                 'timeout' => 2
             ] );
@@ -119,7 +125,7 @@ describe( 'server with default config', function() {
 
         $response = $this->client->request( 'PUT', $this->url . '/example', [
             'headers' => [
-                'Origin' => 'http://different-domain.com'
+                'Origin' => NOT_ALLOWED_ORIGIN
             ],
             'timeout' => 2
         ] );

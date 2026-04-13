@@ -81,7 +81,7 @@ function cors( $options = [] ) {
 
         $requestMethod = $req->method();
 
-        if ( $requestMethod === METHOD_OPTIONS ) {
+        if ( $requestMethod === METHOD_OPTIONS ) { // Preflight
 
             $res->status( STATUS_NO_CONTENT );
             $res->header( HEADER_CONTENT_LENGTH, 0 );
@@ -139,7 +139,7 @@ function cors( $options = [] ) {
 
             $preflightRequestedMethod = $req->header( REQUEST_HEADER__ACCESS_CONTROL_REQUEST_METHOD );
 
-            if ( $requestMethod === METHOD_OPTIONS ) {
+            if ( $requestMethod === METHOD_OPTIONS ) { // Preflight
 
                 if ( ! is_null( $preflightRequestedMethod ) ) {
                     if ( isHttpMethodValid( $preflightRequestedMethod ) ) {
@@ -193,7 +193,7 @@ function cors( $options = [] ) {
 
         // --
 
-        if ( $requestMethod === METHOD_OPTIONS ) { // Preflight Request
+        if ( $requestMethod === METHOD_OPTIONS ) { // Preflight
 
             // # Preflight Continue -------------------------------------------
             if ( $opt->preflightContinue ) {

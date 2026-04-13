@@ -1,4 +1,4 @@
-![Packagist Version](https://img.shields.io/packagist/v/phputil/cors?style=for-the-badge&color=green)
+[![Packagist Version](https://img.shields.io/packagist/v/phputil/cors?style=for-the-badge&color=green)]()
 ![GitHub License](https://img.shields.io/github/license/thiagodp/cors?style=for-the-badge&color=green)
 ![Packagist Downloads](https://img.shields.io/packagist/dt/phputil/cors?style=for-the-badge&color=green)
 ![Build](https://github.com/thiagodp/cors/actions/workflows/ci.yml/badge.svg?style=for-the-badge&color=green)

@@ -21,7 +21,7 @@ describe( 'server with origin', function() use ( $config ) {
 
         // HTTP Server
         $cmd = "cd $rootDir && php -S {$this->server}";
-        echo 'Running server: ' . $cmd, PHP_EOL;
+        echo 'Running server with Origin: ' . $cmd, PHP_EOL;
 
         $spec = [
             [ 'pipe', 'r' ], // stdin
@@ -34,7 +34,7 @@ describe( 'server with origin', function() use ( $config ) {
         }
 
         // HTTP Client
-        $this->client = new CurlHttpClient(); // HttpClient::create();
+        $this->client = extension_loaded( 'curl' ) ? new CurlHttpClient() : HttpClient::create();
     } );
 
 
