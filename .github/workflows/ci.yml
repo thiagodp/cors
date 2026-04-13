@@ -16,12 +16,12 @@ jobs:
 
     steps:
       - name: Git checkout
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: PHP Setup
-      - uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
           extensions: curl
@@ -36,7 +36,7 @@ jobs:
             ${{ runner.os }}-php-
 
       - name: Install dependencies
-      - run: composer install --no-interaction
+        run: composer install --no-interaction
 
       - name: Automated Tests
-      - run: composer test
+        run: composer test
