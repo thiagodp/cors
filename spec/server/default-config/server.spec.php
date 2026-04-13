@@ -32,6 +32,10 @@ describe( 'server with default config', function() use ( $host ) {
             throw new Exception( 'Cannot run the HTTP server.' );
         }
 
+        if ( PHP_OS_FAMILY != 'Windows' ) { // MacOS/Linux
+            usleep( 200000 );
+        }
+
         // HTTP Client
         $this->client = extension_loaded( 'curl' ) ? new CurlHttpClient() : HttpClient::create();
     } );
