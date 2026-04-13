@@ -68,7 +68,7 @@ class CorsOptions {
     /**
      * Validates the options and throws an exception in case of a problem.
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function validate() {
         validateOptions( $this );
@@ -163,7 +163,7 @@ function validateOptions( CorsOptions $co ) {
     }
     // HTTP methods
     foreach ( $methodsToValidate as $m ) {
-        if ( ! isHttpMethodValid( trim( $m ) ) ) {
+        if ( ! isHttpMethodValid( trim( (string) $m ) ) ) {
             throw new RuntimeException( MSG_INVALID_HTTP_METHOD );
         }
     }

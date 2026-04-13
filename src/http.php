@@ -33,7 +33,7 @@ const SUPPORTED_METHODS = [
 // UTILITIES ------------------------------------------------------------------
 
 function isHttpMethodValid( $method ) {
-    return array_search( strtoupper( $method ), SUPPORTED_METHODS ) !== false;
+    return array_search( strtoupper( (string) $method ), SUPPORTED_METHODS ) !== false;
 }
 
 function isOriginAllowed( $requestOrigin, $originToCheck ) {
