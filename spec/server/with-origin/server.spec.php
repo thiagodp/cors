@@ -6,14 +6,14 @@ use Symfony\Component\HttpClient\HttpClient;
 
 $config = require_once( __DIR__ . '/config.php' );
 
-describe( 'server with origin', function() use ( $config ) {
+describe( 'server with origin', function() use ( $config, $isWindows ) {
 
     $this->server = $config[ 'domain' ];
     $this->url = $config[ 'localhost' ];
     $this->allowed = $config[ 'allowed' ];
     $this->process = null;
 
-    beforeAll( function() {
+    beforeAll( function() use ( $isWindows ) {
 
         $rootDir = dirname( __FILE__ );
 
@@ -29,6 +29,10 @@ describe( 'server with origin', function() use ( $config ) {
         $this->process = @proc_open( $cmd, $spec, $exitPipes );
         if ( $this->process === false ) {
             throw new Exception( 'Cannot run the HTTP server.' );
+        }
+
+        if ( ! $isWindows ) {
+            usleep( 200000 );
         }
 
         // HTTP Client

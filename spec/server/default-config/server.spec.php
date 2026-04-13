@@ -5,8 +5,9 @@ require_once __DIR__ . '/../shared.php';
 use Symfony\Component\HttpClient\CurlHttpClient;
 use Symfony\Component\HttpClient\HttpClient;
 
+// usleep(500000);
 
-describe( 'server with default config', function() use ( $host ) {
+describe( 'server with default config', function() use ( $host, $isWindows ) {
 
     $port = '9996';
 
@@ -14,7 +15,7 @@ describe( 'server with default config', function() use ( $host ) {
     $this->url = 'http://' . $this->server;
     $this->process = null;
 
-    beforeAll( function() {
+    beforeAll( function() use ( $isWindows ) {
 
         $rootDir = dirname( __FILE__ );
 
@@ -30,6 +31,10 @@ describe( 'server with default config', function() use ( $host ) {
         $this->process = @proc_open( $cmd, $spec, $exitPipes );
         if ( $this->process === false ) {
             throw new Exception( 'Cannot run the HTTP server.' );
+        }
+
+        if ( ! $isWindows ) {
+            usleep( 200000 );
         }
 
         // HTTP Client
