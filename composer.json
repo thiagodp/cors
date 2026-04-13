@@ -12,14 +12,14 @@
         "migrate": "rector"
     },
     "require": {
-        "php": ">=8.2",
-        "symfony/http-client": "^5.4"
+        "php": ">=7.4"
     },
     "require-dev": {
         "ext-curl": "*",
+        "symfony/http-client": "^5.4",
         "phputil/router": "^0.3.3",
-        "phpstan/phpstan": "^2.1",
-        "rector/rector": "^2.4",
+        "phpstan/phpstan": "^0.12.100",
+        "rector/rector": "^0.8.56",
         "kahlan/kahlan": "^6.1"
     },
     "autoload": {
